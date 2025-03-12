@@ -4,777 +4,784 @@
 'executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\myutil.vbs",1).readAll()'
 'set myItem = (new MyItemCtl)(Edit1, Button2, Spin1, Button1, GridPro1, 4249, 0)
 'set myCL = new MyIdxColor
+executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\import.vbs",1).readAll()
+import "combo"
+import "ds"
+import "util"
+import "string"
+import "grid"
 
-Function mySlice (aInput, Byval aStart, Byval aEnd)
-    If IsArray(aInput) Then
-	if ubound(aInput) < 0 then
-		mySlice = aInput
-	else
-        	Dim i
-        	Dim intStep
-        	Dim arrReturn
-        	If aStart < 0 Then
-        	    aStart = aStart + Ubound(aInput) + 1
-		End If
-
-        	If aEnd < 0 Then
-        	    aEnd = aEnd + Ubound(aInput) + 1
-        	End If
-
-        	Redim arrReturn(Abs(aStart - aEnd))
-        	If aStart > aEnd Then
-        	    intStep = -1
-        	Else
-        	    intStep = 1
-        	End If
-        	For i = aStart To aEnd Step intStep
-        	    If Isobject(aInput(i)) Then
-        	        Set arrReturn(Abs(i-aStart)) = aInput(i)
-        	    Else
-        	        arrReturn(Abs(i-aStart)) = aInput(i)
-        	    End If
-        	Next
-        	mySlice = arrReturn
-		end if
-    Else
-        mySlice = Null
-    End If
-End Function
-
-Sub QuickSort(ByRef ThisArray)
-	'Sort an array alphabetically
-	
-	Dim LowerBound, UpperBound
-	
-	LowerBound = LBound(ThisArray) 
-	UpperBound = UBound(ThisArray) 
-	
-	QuickSortRecursive ThisArray, LowerBound, UpperBound
-End Sub
-
-Sub QuickSortRecursive(ByRef ThisArray, ByVal LowerBound, ByVal UpperBound)
-	'Approximate implementation of https://en.wikipedia.org/wiki/Quicksort
-	
-	Dim PivotValue, LowerSwap, UpperSwap, TempItem
-	
-	'Zero or 1 item to sort
-	If UpperBound - LowerBound < 1 Then Exit Sub
-	
-	'Only 2 items to sort
-	If UpperBound - LowerBound = 1 Then
-		If ThisArray(LowerBound) > ThisArray(UpperBound) Then
-			TempItem = ThisArray(LowerBound)
-			ThisArray(LowerBound) = ThisArray(UpperBound)
-			ThisArray(UpperBound) = TempItem
-		End If
-		Exit Sub
-	End If
-	
-	'3 or more items to sort
-	PivotValue = ThisArray(Int((LowerBound + UpperBound) / 2))
-	ThisArray(Int((LowerBound + UpperBound) / 2)) = ThisArray(LowerBound)
-	
-	LowerSwap = LowerBound + 1
-	UpperSwap = UpperBound
-	
-	Do
-		'Find the right LowerSwap
-		While LowerSwap < UpperSwap And ThisArray(LowerSwap) <= PivotValue
-			LowerSwap = LowerSwap + 1
-		Wend
-		
-		'Find the right UpperSwap
-		While LowerBound < UpperSwap And ThisArray(UpperSwap) > PivotValue
-			UpperSwap = UpperSwap - 1
-		Wend
-		
-		'Swap values if LowerSwap is less than UpperSwap
-		If LowerSwap < UpperSwap then
-			TempItem = ThisArray(LowerSwap)
-			ThisArray(LowerSwap) = ThisArray(UpperSwap)
-			ThisArray(UpperSwap) = TempItem
-		End If
-	Loop While LowerSwap < UpperSwap
-	
-	ThisArray(LowerBound) = ThisArray(UpperSwap)
-	ThisArray(UpperSwap) = PivotValue
-	
-	'Recursively call function
-	
-	'2 or more items in first section
-	If LowerBound < (UpperSwap - 1) Then QuickSortRecursive ThisArray, LowerBound, UpperSwap - 1
-	
-	'2 or more items in second section
-	If UpperSwap + 1 < UpperBound Then QuickSortRecursive ThisArray, UpperSwap + 1, UpperBound
-	
-End Sub
-
-'==============================================================
-' arraylist
-' new MyStack()
+'Function mySlice (aInput, Byval aStart, Byval aEnd)
+'    If IsArray(aInput) Then
+'	if ubound(aInput) < 0 then
+'		mySlice = aInput
+'	else
+'        	Dim i
+'        	Dim intStep
+'        	Dim arrReturn
+'        	If aStart < 0 Then
+'        	    aStart = aStart + Ubound(aInput) + 1
+'		End If
 '
-
-class MyArrayList
-	private m_mycnt
-	private m_myarr
-
-	private sub Class_Initialize()
-		m_mycnt = -1
-		m_myarr = array()
-	end sub
-
-	private sub Class_Terminate()
-		set m_myarr = Nothing
-	end sub
-
-	public default function Init()
-		m_mycnt = -1
-		m_myarr = array()
-		set Init = me
-	end function
-
-	public sub setArray(pArr)
-		call clear()
-		for each myv in pArr
-			call add(myv)
-		next
-	end sub
-
-	public function getArray()
-		getArray = m_myarr
-	end function
-
-	public sub add(myval)
-		m_mycnt = m_mycnt + 1
-		redim preserve m_myarr(m_mycnt)
-		if IsObject(myval) = true then
-			set m_myarr(m_mycnt) = myval
-		else
-			m_myarr(m_mycnt) = myval
-		end if
-	end sub 
-
-	public function getit(i)
-		if IsObject(m_myarr(i)) = true then
-			set getit = m_myarr(i)
-		else
-			getit = m_myarr(i)
-		end if
-	end function
-
-	function item(i)
-		if IsObject(m_myarr(i)) = true then
-			set item = m_myarr(i)
-		else
-			item = m_myarr(i)
-		end if
-	end function 
-
-	public sub setit(idx, val)
-		if idx <= m_mycnt then
-			if IsObject(val) = true then
-				set m_myarr(idx) = val
-			else
-				m_myarr(idx) = val
-			end if
-		end if
-	end sub
-
-	sub del(idx)
-		call remove(idx)
-	end sub
-
-	public sub remove(idx)
-		if idx <> m_mycnt then 'not last
-			for i = idx to m_mycnt-1 
-				m_myarr(i) = m_myarr(i+1)
-			next
-		end if
-		m_mycnt = m_mycnt -1
-		redim preserve m_myarr(m_mycnt)
-	end sub
-
-	public function size()
-		size = m_mycnt+1
-	end function
-
-	public sub clear()
-		m_mycnt = -1
-		redim m_myarr(m_mycnt)
-	end sub
+'        	If aEnd < 0 Then
+'        	    aEnd = aEnd + Ubound(aInput) + 1
+'        	End If
+'
+'        	Redim arrReturn(Abs(aStart - aEnd))
+'        	If aStart > aEnd Then
+'        	    intStep = -1
+'        	Else
+'        	    intStep = 1
+'        	End If
+'        	For i = aStart To aEnd Step intStep
+'        	    If Isobject(aInput(i)) Then
+'        	        Set arrReturn(Abs(i-aStart)) = aInput(i)
+'        	    Else
+'        	        arrReturn(Abs(i-aStart)) = aInput(i)
+'        	    End If
+'        	Next
+'        	mySlice = arrReturn
+'		end if
+'    Else
+'        mySlice = Null
+'    End If
+'End Function
+'
+'Sub QuickSort(ByRef ThisArray)
+'	'Sort an array alphabetically
+'	
+'	Dim LowerBound, UpperBound
+'	
+'	LowerBound = LBound(ThisArray) 
+'	UpperBound = UBound(ThisArray) 
+'	
+'	QuickSortRecursive ThisArray, LowerBound, UpperBound
+'End Sub
+'
+'Sub QuickSortRecursive(ByRef ThisArray, ByVal LowerBound, ByVal UpperBound)
+'	'Approximate implementation of https://en.wikipedia.org/wiki/Quicksort
+'	
+'	Dim PivotValue, LowerSwap, UpperSwap, TempItem
+'	
+'	'Zero or 1 item to sort
+'	If UpperBound - LowerBound < 1 Then Exit Sub
+'	
+'	'Only 2 items to sort
+'	If UpperBound - LowerBound = 1 Then
+'		If ThisArray(LowerBound) > ThisArray(UpperBound) Then
+'			TempItem = ThisArray(LowerBound)
+'			ThisArray(LowerBound) = ThisArray(UpperBound)
+'			ThisArray(UpperBound) = TempItem
+'		End If
+'		Exit Sub
+'	End If
+'	
+'	'3 or more items to sort
+'	PivotValue = ThisArray(Int((LowerBound + UpperBound) / 2))
+'	ThisArray(Int((LowerBound + UpperBound) / 2)) = ThisArray(LowerBound)
+'	
+'	LowerSwap = LowerBound + 1
+'	UpperSwap = UpperBound
+'	
+'	Do
+'		'Find the right LowerSwap
+'		While LowerSwap < UpperSwap And ThisArray(LowerSwap) <= PivotValue
+'			LowerSwap = LowerSwap + 1
+'		Wend
+'		
+'		'Find the right UpperSwap
+'		While LowerBound < UpperSwap And ThisArray(UpperSwap) > PivotValue
+'			UpperSwap = UpperSwap - 1
+'		Wend
+'		
+'		'Swap values if LowerSwap is less than UpperSwap
+'		If LowerSwap < UpperSwap then
+'			TempItem = ThisArray(LowerSwap)
+'			ThisArray(LowerSwap) = ThisArray(UpperSwap)
+'			ThisArray(UpperSwap) = TempItem
+'		End If
+'	Loop While LowerSwap < UpperSwap
+'	
+'	ThisArray(LowerBound) = ThisArray(UpperSwap)
+'	ThisArray(UpperSwap) = PivotValue
+'	
+'	'Recursively call function
+'	
+'	'2 or more items in first section
+'	If LowerBound < (UpperSwap - 1) Then QuickSortRecursive ThisArray, LowerBound, UpperSwap - 1
+'	
+'	'2 or more items in second section
+'	If UpperSwap + 1 < UpperBound Then QuickSortRecursive ThisArray, UpperSwap + 1, UpperBound
+'	
+'End Sub
+'
+''==============================================================
+'' arraylist
+'' new MyStack()
+''
+'
+'class MyArrayList
+'	private m_mycnt
+'	private m_myarr
+'
+'	private sub Class_Initialize()
+'		m_mycnt = -1
+'		m_myarr = array()
+'	end sub
+'
+'	private sub Class_Terminate()
+'		set m_myarr = Nothing
+'	end sub
+'
+'	public default function Init()
+'		m_mycnt = -1
+'		m_myarr = array()
+'		set Init = me
+'	end function
+'
+'	public sub setArray(pArr)
+'		call clear()
+'		for each myv in pArr
+'			call add(myv)
+'		next
+'	end sub
+'
+'	public function getArray()
+'		getArray = m_myarr
+'	end function
+'
+'	public sub add(myval)
+'		m_mycnt = m_mycnt + 1
+'		redim preserve m_myarr(m_mycnt)
+'		if IsObject(myval) = true then
+'			set m_myarr(m_mycnt) = myval
+'		else
+'			m_myarr(m_mycnt) = myval
+'		end if
+'	end sub 
+'
+'	public function getit(i)
+'		if IsObject(m_myarr(i)) = true then
+'			set getit = m_myarr(i)
+'		else
+'			getit = m_myarr(i)
+'		end if
+'	end function
+'
+'	function item(i)
+'		if IsObject(m_myarr(i)) = true then
+'			set item = m_myarr(i)
+'		else
+'			item = m_myarr(i)
+'		end if
+'	end function 
+'
+'	public sub setit(idx, val)
+'		if idx <= m_mycnt then
+'			if IsObject(val) = true then
+'				set m_myarr(idx) = val
+'			else
+'				m_myarr(idx) = val
+'			end if
+'		end if
+'	end sub
+'
+'	sub del(idx)
+'		call remove(idx)
+'	end sub
+'
+'	public sub remove(idx)
+'		if idx <> m_mycnt then 'not last
+'			for i = idx to m_mycnt-1 
+'				m_myarr(i) = m_myarr(i+1)
+'			next
+'		end if
+'		m_mycnt = m_mycnt -1
+'		redim preserve m_myarr(m_mycnt)
+'	end sub
+'
+'	public function size()
+'		size = m_mycnt+1
+'	end function
+'
+'	public sub clear()
+'		m_mycnt = -1
+'		redim m_myarr(m_mycnt)
+'	end sub
+'	
+'	public sub Sort()
+'		call QuickSort(m_myarr)
+'	end Sub
+'
+'	function slice(mystart, myend)
+'		slice = mySlice(m_myarr, mystart, myend)
+'	end function
+'
+'	function sjoin(joinStr)
+'		sjoin = join(m_myarr, joinStr)
+'	end function
+'
+'	function indexOf(myval)
+'		myidx = -1
+'		for i = 0 to m_mycnt
+'			if m_myarr(i) = myval then
+'				myidx = i
+'				exit for
+'			end if
+'		next
+'		indexOf = myidx
+'	end function
+'end class
+''==============================================================
+'' Stack
+'' new MyStack(stack_size, type)
+'' stack elementï¿½ï¿½ ï¿½ï¿½ï¿½Ñ´ï¿½, type = "" ï¿½Ï¹ï¿½, type = "obj" object
+'' 
+'class MyStack
+'	private m_mycnt
+'	private m_myarr
+'	private m_mytype
+'	private m_ubound
+'
+'	private sub Class_Initialize()
+'		set m_myarr = Nothing
+'	end sub
+'
+'	private sub Class_Terminate()
+'		set m_myarr = Nothing
+'	end sub
+'	
+'	public default function Init(mystkcnt, mytype)
+'		m_mytype = mytype
+'		m_mycnt = -1
+'		m_ubound = mystkcnt - 1
+'		redim m_myarr(m_ubound)
+'		set Init = me
+'	end function
+'
+'	property get count
+'		count = m_mycnt + 1
+'	end property
+'
+'	public function pop()
+'		if m_mycnt < 0 then
+'			'noop
+'			if m_mytype = "obj" then
+'				set pop = Nothing
+'			else
+'				pop = "sys_empty"
+'			end if
+'		else
+'			dim myidx
+'			myidx = m_mycnt
+'			m_mycnt = m_mycnt - 1
+'			if m_mytype = "obj" then
+'				set pop = m_myarr(myidx)
+'			else
+'				pop = m_myarr(myidx)
+'			end if
+'		end if
+'	end function
+'
+'	public function push(myval)
+'		dim myret
+'		myret = 0
+'		m_mycnt = m_mycnt + 1
+'		if m_mycnt > m_ubound then
+'			myret = -1
+'		else
+'			if m_mytype = "obj" then
+'				set m_myarr(m_mycnt) = myval
+'			else	
+'				m_myarr(m_mycnt) = myval
+'			end if
+'		end if
+'		push = myret
+'	end function
+'
+'	public function getlist()
+'		getlist = m_myarr
+'	end function
+'
+'	public function isEmpty()
+'		if m_mycnt = -1 then
+'			isEmpty = true
+'		else
+'			isEmpty = false
+'		end if
+'	end function
+'
+'
+'	public function reset(mystkcnt, mytype)
+'		m_mytype = mytype
+'		m_mycnt = -1
+'		m_ubound = mystkcnt - 1
+'		redim m_myarr(m_ubound)
+'	end function
+'end class
+'
+''==============================================================
+'' Queue
+''
+'class MyQueue
+'	Private outStack
+'	Private inStack
+'	Private m_type
+'	Private m_qsize
+'
+'	Private Sub Class_Initialize()
+'		set outStack = Nothing
+'		set inStack = Nothing
+'	End Sub
+'
+'	Private Sub Class_Terminate()
+'		set outStack = Nothing
+'		set inStack = Nothing
+'	End Sub
+'
+'	public default function Init(qsize, mytype)
+'		m_type = mytype
+'		m_qsize = qsize
+'		set outStack = (new MyStack)(m_qsize, m_type)
+'		set inStack = (new MyStack)(m_qsize, m_type)
+'		set Init = me
+'	End function
+'
+'	public function enQ(myval)
+'		call inStack.push(myval)
+'	end function
+'
+'	public function deQ()
+'		if inStack.isEmpty() and outStack.isEmpty() then
+'			call Form.MsgBoxOk("no data in queue", "inform")	
+'		else
+'			if outStack.isEmpty() then
+'				while inStack.isEmpty() = false
+'					outStack.push(inStack.pop())
+'				wend
+'			end if
+'			deQ = outStack.pop()
+'		end if
+'	end function
+'end class
 	
-	public sub Sort()
-		call QuickSort(m_myarr)
-	end Sub
-
-	function slice(mystart, myend)
-		slice = mySlice(m_myarr, mystart, myend)
-	end function
-
-	function sjoin(joinStr)
-		sjoin = join(m_myarr, joinStr)
-	end function
-
-	function indexOf(myval)
-		myidx = -1
-		for i = 0 to m_mycnt
-			if m_myarr(i) = myval then
-				myidx = i
-				exit for
-			end if
-		next
-		indexOf = myidx
-	end function
-end class
-'==============================================================
-' Stack
-' new MyStack(stack_size, type)
-' stack element¸¦ Á¤ÇÑ´Ù, type = "" ÀÏ¹Ý, type = "obj" object
-' 
-class MyStack
-	private m_mycnt
-	private m_myarr
-	private m_mytype
-	private m_ubound
-
-	private sub Class_Initialize()
-		set m_myarr = Nothing
-	end sub
-
-	private sub Class_Terminate()
-		set m_myarr = Nothing
-	end sub
-	
-	public default function Init(mystkcnt, mytype)
-		m_mytype = mytype
-		m_mycnt = -1
-		m_ubound = mystkcnt - 1
-		redim m_myarr(m_ubound)
-		set Init = me
-	end function
-
-	property get count
-		count = m_mycnt + 1
-	end property
-
-	public function pop()
-		if m_mycnt < 0 then
-			'noop
-			if m_mytype = "obj" then
-				set pop = Nothing
-			else
-				pop = "sys_empty"
-			end if
-		else
-			dim myidx
-			myidx = m_mycnt
-			m_mycnt = m_mycnt - 1
-			if m_mytype = "obj" then
-				set pop = m_myarr(myidx)
-			else
-				pop = m_myarr(myidx)
-			end if
-		end if
-	end function
-
-	public function push(myval)
-		dim myret
-		myret = 0
-		m_mycnt = m_mycnt + 1
-		if m_mycnt > m_ubound then
-			myret = -1
-		else
-			if m_mytype = "obj" then
-				set m_myarr(m_mycnt) = myval
-			else	
-				m_myarr(m_mycnt) = myval
-			end if
-		end if
-		push = myret
-	end function
-
-	public function getlist()
-		getlist = m_myarr
-	end function
-
-	public function isEmpty()
-		if m_mycnt = -1 then
-			isEmpty = true
-		else
-			isEmpty = false
-		end if
-	end function
-
-
-	public function reset(mystkcnt, mytype)
-		m_mytype = mytype
-		m_mycnt = -1
-		m_ubound = mystkcnt - 1
-		redim m_myarr(m_ubound)
-	end function
-end class
-
-'==============================================================
-' Queue
+''==============================================================
+'' vbscript keycode class
+''
+'class MyKeyCode_
+'	public vbKeyReturn_
+'	public vbKeyEscape_
+'	public vbKeyDownArrow_
+'	public vbKeyUp_
+'	public vbKeyDown_
+'	public vbKeyControl_
+'	public vbKeyBack_ 
+'	public vbKeySpace_ 
 '
-class MyQueue
-	Private outStack
-	Private inStack
-	Private m_type
-	Private m_qsize
-
-	Private Sub Class_Initialize()
-		set outStack = Nothing
-		set inStack = Nothing
-	End Sub
-
-	Private Sub Class_Terminate()
-		set outStack = Nothing
-		set inStack = Nothing
-	End Sub
-
-	public default function Init(qsize, mytype)
-		m_type = mytype
-		m_qsize = qsize
-		set outStack = (new MyStack)(m_qsize, m_type)
-		set inStack = (new MyStack)(m_qsize, m_type)
-		set Init = me
-	End function
-
-	public function enQ(myval)
-		call inStack.push(myval)
-	end function
-
-	public function deQ()
-		if inStack.isEmpty() and outStack.isEmpty() then
-			call Form.MsgBoxOk("no data in queue", "inform")	
-		else
-			if outStack.isEmpty() then
-				while inStack.isEmpty() = false
-					outStack.push(inStack.pop())
-				wend
-			end if
-			deQ = outStack.pop()
-		end if
-	end function
-end class
-	
-'==============================================================
-' vbscript keycode class
+'	Private Sub Class_Initialize()
+'		vbKeyBack_ = 8
+'		vbKeyReturn_ = 13
+'		vbKeyEscape_ = 27
+'		vbKeySpace_ = 32
+'		vbKeyUp_ = 38
+'		vbKeyDownArrow_ = 40
+'		vbKeyDown_ = 40
+'		vbKeyControl_ = 17
+'	End Sub
 '
-class MyKeyCode_
-	public vbKeyReturn_
-	public vbKeyEscape_
-	public vbKeyDownArrow_
-	public vbKeyUp_
-	public vbKeyDown_
-	public vbKeyControl_
-	public vbKeyBack_ 
-	public vbKeySpace_ 
-
-	Private Sub Class_Initialize()
-		vbKeyBack_ = 8
-		vbKeyReturn_ = 13
-		vbKeyEscape_ = 27
-		vbKeySpace_ = 32
-		vbKeyUp_ = 38
-		vbKeyDownArrow_ = 40
-		vbKeyDown_ = 40
-		vbKeyControl_ = 17
-	End Sub
-
-	Private Sub Class_Terminate()
-	End Sub
-end class
-'=================================================================
-'dictionary class
+'	Private Sub Class_Terminate()
+'	End Sub
+'end class
+''=================================================================
+''dictionary class
+''
+'class MyDic
+'	Private m_mydic
 '
-class MyDic
-	Private m_mydic
-
-	Private Sub Class_Initialize()
-		set m_mydic = CreateObject("Scripting.Dictionary")
-	End Sub
-
-	Private Sub Class_Terminate()
-		set m_mydic = Nothing
-	End Sub
-
-	Property Get Count
-		Count = m_mydic.Count
-	End Property
-
-	Public Sub Add(mykey, myitem)
-		call add2up(mykey, myitem)
-	End Sub
-
-	property Get keys
-		keys = m_mydic.keys
-	end property 
-
-	Public Function Item(mykey)
-		if m_mydic.Exists(mykey) then
-			Item = m_mydic.item(mykey)
-		else
-			Item = ""
-		end if
-	End Function
-
-	Sub del(mykey)
-	       if m_mydic.Exists(mykey) then
-			m_mydic.remove(mykey)
-		end if
-	end sub
-
-	Sub Remove(mykey)
-		m_mydic.remove(mykey)
-	End Sub
-
-	Sub RemoveAll()
-		m_mydic.removeAll
-	End Sub
-
-	sub clear()
-		call RemoveAll()	
-	end sub
-
-	Public Function Exists(mykey)
-		Exists = m_mydic.Exists(mykey)
-	End Function
-
-	public sub Modify(mykey, myitem)
-	       if m_mydic.Exists(mykey) then
-			call m_mydic.remove(mykey)
-			call m_mydic.Add(mykey, myitem)
-	       end if
-	end sub	
-
-	sub add2up(mykey, myitem)
-	    if m_mydic.Exists(mykey) then
-			call m_mydic.remove(mykey)
-		end if
-		call m_mydic.Add(mykey, myitem)
-	end sub
-
-	function size()
-		size = m_mydic.Count
-	end function
-end class
-''==================================================================
-' set the index color on infomax thema
+'	Private Sub Class_Initialize()
+'		set m_mydic = CreateObject("Scripting.Dictionary")
+'	End Sub
 '
-class MyIdxColor
-	Private m_mySkin
-	Private m_myColor
-	'Private m_mycolorini_path
-
-	Private Sub Class_Initialize()
-		'm_mycolorini_path = "..\..\common\config\colortbl.ini"
-      		m_mySkin = Form.GetConfigFileData("envset.ini", "SKININFO", "COLORTABLE", "0")
-      		set m_myColor = new MyDic
-		mycnt = Form.GetConfigFileData("colortbl.ini", "KEY", "COUNT", "0")
-      		for tidx = 0  to mycnt -1
-			tkey = Form.GetConfigFileData("colortbl.ini", "KEY", tidx, "0")
-      		        myRGBstr = Form.GetConfigFileData("colortbl.ini", "PAN_"&right("00"&m_mySkin, 2), tidx, "0")
-      		        myRGB = split(myRGBstr,"@")
-      		        call m_myColor.Add(CInt(tkey), RGB(myRGB(0), myRGB(1), myRGB(2)))
-      		next
-	End Sub
-
-	Private Sub Class_Terminate()
-		set m_myColor = Nothing
-	End Sub
-'	'if strSkin = "5" Or strSkin = "6" Or strSkin = "7" then	'ºí·¢½ºÅ²
-
-	Public Function getIdxRGB(myIdx)
-		getIdxRGB = m_myColor.Item(myIdx)
-	End Function
-End class
+'	Private Sub Class_Terminate()
+'		set m_mydic = Nothing
+'	End Sub
+'
+'	Property Get Count
+'		Count = m_mydic.Count
+'	End Property
+'
+'	Public Sub Add(mykey, myitem)
+'		call add2up(mykey, myitem)
+'	End Sub
+'
+'	property Get keys
+'		keys = m_mydic.keys
+'	end property 
+'
+'	Public Function Item(mykey)
+'		if m_mydic.Exists(mykey) then
+'			Item = m_mydic.item(mykey)
+'		else
+'			Item = ""
+'		end if
+'	End Function
+'
+'	Sub del(mykey)
+'	       if m_mydic.Exists(mykey) then
+'			m_mydic.remove(mykey)
+'		end if
+'	end sub
+'
+'	Sub Remove(mykey)
+'		m_mydic.remove(mykey)
+'	End Sub
+'
+'	Sub RemoveAll()
+'		m_mydic.removeAll
+'	End Sub
+'
+'	sub clear()
+'		call RemoveAll()	
+'	end sub
+'
+'	Public Function Exists(mykey)
+'		Exists = m_mydic.Exists(mykey)
+'	End Function
+'
+'	public sub Modify(mykey, myitem)
+'	       if m_mydic.Exists(mykey) then
+'			call m_mydic.remove(mykey)
+'			call m_mydic.Add(mykey, myitem)
+'	       end if
+'	end sub	
+'
+'	sub add2up(mykey, myitem)
+'	    if m_mydic.Exists(mykey) then
+'			call m_mydic.remove(mykey)
+'		end if
+'		call m_mydic.Add(mykey, myitem)
+'	end sub
+'
+'	function size()
+'		size = m_mydic.Count
+'	end function
+'end class
+'''==================================================================
+'' set the index color on infomax thema
+''
+'class MyIdxColor
+'	Private m_mySkin
+'	Private m_myColor
+'	'Private m_mycolorini_path
+'
+'	Private Sub Class_Initialize()
+'		'm_mycolorini_path = "..\..\common\config\colortbl.ini"
+'      		m_mySkin = Form.GetConfigFileData("envset.ini", "SKININFO", "COLORTABLE", "0")
+'      		set m_myColor = new MyDic
+'		mycnt = Form.GetConfigFileData("colortbl.ini", "KEY", "COUNT", "0")
+'      		for tidx = 0  to mycnt -1
+'			tkey = Form.GetConfigFileData("colortbl.ini", "KEY", tidx, "0")
+'      		        myRGBstr = Form.GetConfigFileData("colortbl.ini", "PAN_"&right("00"&m_mySkin, 2), tidx, "0")
+'      		        myRGB = split(myRGBstr,"@")
+'      		        call m_myColor.Add(CInt(tkey), RGB(myRGB(0), myRGB(1), myRGB(2)))
+'      		next
+'	End Sub
+'
+'	Private Sub Class_Terminate()
+'		set m_myColor = Nothing
+'	End Sub
+''	'if strSkin = "5" Or strSkin = "6" Or strSkin = "7" then	'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å²
+'
+'	Public Function getIdxRGB(myIdx)
+'		getIdxRGB = m_myColor.Item(myIdx)
+'	End Function
+'End class
 
 '-------------------------------------------------
 '
-Sub FB_Auth(szTranID, pMemo)
-	'ÇØ¿ÜÃ¤±Ç±ÇÇÑ(0420) Start
-	sAuth = Left( TRIM( Form.GetConfigFileData( "../sys/auth.dat", "D2DMAIN" , "0420", "" ) ), 1)
-	'ÇØ¿ÜÃ¤±Ç±ÇÇÑ(0420) End
-	if sAuth <> "R" then
-		set tMemo = pMemo
-		set m_tColor = new MyIdxColor
-		tMemo.BackColor m_tColor.getIdxRGB(41)
-		tMemo.Left = Form.GetScreenWidth / 4.5
-		tMemo.Top = Form.GetScreenHeight / 2.5
-		tMemo.Height=88
-		tMemo.Width=525
-		tMemo.Enabled = False
-		tMemo.text= "ÇØ¿ÜÃ¤±ÇÀº ÇÁ¸®¹Ì¾ö ¼­ºñ½º·Î Ãß°¡ »óÇ°°¡ÀÔÀÌ ÇÊ¿äÇÑ ¼­ºñ½ºÀÔ´Ï´Ù. (¿ù 20¸¸¿ø/VAT º°µµ)"&chr(10)&_
-				"°ü·Ã ¹®ÀÇ´Â ¾Æ·¡ ¿¬¶ôÃ³·Î ºÎÅ¹µå¸³´Ï´Ù."&chr(10)&chr(10)&_
-				"Æ®¶óÀÌ¾ó ½ÅÃ» ¹× ½Å±Ô °¡ÀÔ: 398-5208 / 398-4946"&chr(10)&_
-				"¼­ºñ½º ¹× µ¥ÀÌÅÍ ¹®ÀÇ : 398-5275 / 398-4979"
-		tMemo.visible = true
-		call TRANMANAGER.ClearOutputData(szTranID)
-	end if
-End Sub
-'===============================================
-' string mask format
+'Sub FB_Auth(szTranID, pMemo)
+'	'ï¿½Ø¿ï¿½Ã¤ï¿½Ç±ï¿½ï¿½ï¿½(0420) Start
+'	sAuth = Left( TRIM( Form.GetConfigFileData( "../sys/auth.dat", "D2DMAIN" , "0420", "" ) ), 1)
+'	'ï¿½Ø¿ï¿½Ã¤ï¿½Ç±ï¿½ï¿½ï¿½(0420) End
+'	if sAuth <> "R" then
+'		set tMemo = pMemo
+'		set m_tColor = new MyIdxColor
+'		tMemo.BackColor m_tColor.getIdxRGB(41)
+'		tMemo.Left = Form.GetScreenWidth / 4.5
+'		tMemo.Top = Form.GetScreenHeight / 2.5
+'		tMemo.Height=88
+'		tMemo.Width=525
+'		tMemo.Enabled = False
+'		tMemo.text= "ï¿½Ø¿ï¿½Ã¤ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ñ½º·ï¿½ ï¿½ß°ï¿½ ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½. (ï¿½ï¿½ 20ï¿½ï¿½ï¿½ï¿½/VAT ï¿½ï¿½ï¿½ï¿½)"&chr(10)&_
+'				"ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½Æ·ï¿½ ï¿½ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½Å¹ï¿½å¸³ï¿½Ï´ï¿½."&chr(10)&chr(10)&_
+'				"Æ®ï¿½ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ã» ï¿½ï¿½ ï¿½Å±ï¿½ ï¿½ï¿½ï¿½ï¿½: 398-5208 / 398-4946"&chr(10)&_
+'				"ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ : 398-5275 / 398-4979"
+'		tMemo.visible = true
+'		call TRANMANAGER.ClearOutputData(szTranID)
+'	end if
+'End Sub
+''===============================================
+'' string mask format
+''
+'Function getStrMask(mysrc, mymasking)
+'	reval = ""
+'	mysrc = trim(mysrc)
 '
-Function getStrMask(mysrc, mymasking)
-	reval = ""
-	mysrc = trim(mysrc)
-
-	if mysrc = "" then
-		'noop
-	else
-		setidx = 1
-		for i = 1 to len(mymasking)
-			tmpval = mid(mysrc, setidx, 1)
-			mydim = mid(mymasking, i, 1)
-			if mydim = "#" then
-				reval = reval&tmpval
-			else
-				reval = reval&mydim
-				for j = i+1 to len(mymasking)
-					mydim = mid(mymasking, j, 1)
-					if mydim = "#" then
-						reval = reval&tmpval
-						exit for
-					else
-						reval = reval&mydim
-					end if
-				next
-				i = j
-			end if
-			setidx = setidx + 1
-			if len(mysrc) < setidx then
-				exit for
-			end if
-		next
-	end if
-	getStrMask = reval
-end function
+'	if mysrc = "" then
+'		'noop
+'	else
+'		setidx = 1
+'		for i = 1 to len(mymasking)
+'			tmpval = mid(mysrc, setidx, 1)
+'			mydim = mid(mymasking, i, 1)
+'			if mydim = "#" then
+'				reval = reval&tmpval
+'			else
+'				reval = reval&mydim
+'				for j = i+1 to len(mymasking)
+'					mydim = mid(mymasking, j, 1)
+'					if mydim = "#" then
+'						reval = reval&tmpval
+'						exit for
+'					else
+'						reval = reval&mydim
+'					end if
+'				next
+'				i = j
+'			end if
+'			setidx = setidx + 1
+'			if len(mysrc) < setidx then
+'				exit for
+'			end if
+'		next
+'	end if
+'	getStrMask = reval
+'end function
 '===============================================
 ' web link def
 sub myfb_openweb(mytype)
-	if mytype = "1" then
-		myUrl = "bizrpt.koribor.net/idcb/mdys/fb_grade.jpg"
-		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=170 /YPOS=72 /WIDTH=600 /HEIGHT=590 /URL=http://"&myUrl
-		Form.OpenScreen "9988"
-
-	elseif mytype = "2" then
-		myUrl = "bizrpt.koribor.net/idcb/mdys/Disclaimer_SnP.JPG"
-		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=170 /YPOS=72 /WIDTH=680 /HEIGHT=320 /URL=http://"&myUrl
-		Form.OpenScreen "9988"
-	elseif mytype = "bondstandard" then
-		myUrl = "bizrpt.koribor.net/web/viewer.html?file=/idcb/bond/bondstandard.pdf"
-		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=170 /YPOS=200 /WIDTH=680 /HEIGHT=500 /URL=http://"&myUrl
-		Form.OpenScreen "9988"
-	elseif Instr(mytype, "fitch_report_") then
-		myUrl = "www.fitchratings.com/site/pr/"&split(mytype, "fitch_report_")(1)
-		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=30 /YPOS=200 /WIDTH=1220 /HEIGHT=500 /URL=https://"&myUrl
-		Form.OpenScreen "9988"
-	elseif Instr(mytype, "markit_tier") then
-		'myUrl = "http://bond.einfomax.co.kr/upload/web/viewer.html?file=/upload/tier.pdf"
-		myUrl = "http://rreport.einfomax.co.kr/bizrpt/web/viewer.html?file=/idcb/markit/tier.pdf"
-		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=170 /YPOS=72 /WIDTH=680 /HEIGHT=800 /URL="&myUrl
-		Form.OpenScreen "9988"
-	end if
+	call openweb(mytype, "")
+'	if mytype = "1" then
+'		myUrl = "bizrpt.koribor.net/idcb/mdys/fb_grade.jpg"
+'		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=170 /YPOS=72 /WIDTH=600 /HEIGHT=590 /URL=http://"&myUrl
+'		Form.OpenScreen "9988"
+'
+'	elseif mytype = "2" then
+'		myUrl = "bizrpt.koribor.net/idcb/mdys/Disclaimer_SnP.JPG"
+'		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=170 /YPOS=72 /WIDTH=680 /HEIGHT=320 /URL=http://"&myUrl
+'		Form.OpenScreen "9988"
+'	elseif mytype = "bondstandard" then
+'		myUrl = "bizrpt.koribor.net/web/viewer.html?file=/idcb/bond/bondstandard.pdf"
+'		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=170 /YPOS=200 /WIDTH=680 /HEIGHT=500 /URL=http://"&myUrl
+'		Form.OpenScreen "9988"
+'	elseif Instr(mytype, "fitch_report_") then
+'		myUrl = "www.fitchratings.com/site/pr/"&split(mytype, "fitch_report_")(1)
+'		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=30 /YPOS=200 /WIDTH=1220 /HEIGHT=500 /URL=https://"&myUrl
+'		Form.OpenScreen "9988"
+'	elseif Instr(mytype, "markit_tier") then
+'		'myUrl = "http://bond.einfomax.co.kr/upload/web/viewer.html?file=/upload/tier.pdf"
+'		myUrl = "http://rreport.einfomax.co.kr/bizrpt/web/viewer.html?file=/idcb/markit/tier.pdf"
+'		Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS=170 /YPOS=72 /WIDTH=680 /HEIGHT=800 /URL="&myUrl
+'		Form.OpenScreen "9988"
+'	end if
 End sub
-'==============================================
-' formatnum def
-' myprc = your value
-' mydec = decimal point
-' defaultno = defaultno is no value label
-' mytail = value label tail mark
-function myFormatNum(pmyprc, pmydec, pdefaultno, pmytail, pIncLeadingDigZero, pUseParForNegNum, pGroupDig, pmyhead)
-	reval = ""
-	if trim(pmyprc) = "" or User1.CDbl(pmyprc) = User1.CDbl(pdefaultno) then
-		'nooop
-	else
-		reval = pmyhead&formatnumber(pmyprc, pmydec, pIncLeadingDigZero, pUseParForNegNum, pGroupDig)&pmytail
-	end if
-	myFormatNum = reval
-end function
+''==============================================
+'' formatnum def
+'' myprc = your value
+'' mydec = decimal point
+'' defaultno = defaultno is no value label
+'' mytail = value label tail mark
+'function myFormatNum(pmyprc, pmydec, pdefaultno, pmytail, pIncLeadingDigZero, pUseParForNegNum, pGroupDig, pmyhead)
+'	reval = ""
+'	if trim(pmyprc) = "" or User1.CDbl(pmyprc) = User1.CDbl(pdefaultno) then
+'		'nooop
+'	else
+'		reval = pmyhead&formatnumber(pmyprc, pmydec, pIncLeadingDigZero, pUseParForNegNum, pGroupDig)&pmytail
+'	end if
+'	myFormatNum = reval
+'end function
+''
+'function fmtNum(pmyprc, pmydec, pdefaultno, pmyhead, pmytail)
+'	reval = ""
+'	if trim(pmyprc) = "" or CDbl(pmyprc) = CDbl(pdefaultno) then
+'		'nooop
+'	else
+'		reval = pmyhead&formatnumber(pmyprc, pmydec)&pmytail
+'	end if
+'	fmtNum = reval
+'end function
 '
-function fmtNum(pmyprc, pmydec, pdefaultno, pmyhead, pmytail)
-	reval = ""
-	if trim(pmyprc) = "" or CDbl(pmyprc) = CDbl(pdefaultno) then
-		'nooop
-	else
-		reval = pmyhead&formatnumber(pmyprc, pmydec)&pmytail
-	end if
-	fmtNum = reval
-end function
-
-function defNum(pmyprc, pdefaultno, pmyhead, pmytail)
-	reval = ""
-	if trim(pmyprc) = "" or CDbl(pmyprc) = CDbl(pdefaultno) then
-		'nooop
-	else
-		reval = pmyhead&pmyprc&pmytail
-	end if
-	defNum = reval
-end function
+'function defNum(pmyprc, pdefaultno, pmyhead, pmytail)
+'	reval = ""
+'	if trim(pmyprc) = "" or CDbl(pmyprc) = CDbl(pdefaultno) then
+'		'nooop
+'	else
+'		reval = pmyhead&pmyprc&pmytail
+'	end if
+'	defNum = reval
+'end function
 
 
-'==============================================
-' def retrun date format string
-' ex) num2date("20180920", "YYYY-MM-DD") = "2018-09-20"
-function num2date(mysrc, myformat)
-
-	if instr(mysrc, ".") > 0 then
-		mytemp = split(mysrc, ".")
-		mysrc = mytemp(0)
-	end if
-
-	if mysrc = "" or mysrc = "0" then
-		num2date = ""
-	else
-		a = mysrc
-		b = UCase(myformat)
-		mydm = ""
-		if instr(b, "/") > 0 then
-			mydm = "/"
-		elseif instr(b, "-") > 0 then
-			mydm = "-"
-		elseif instr(b, ".") > 0 then
-			mydm = "."
-		end if
-
-		c = split(b, mydm)
-		myckstr = mid(c(0),1,1)
-		if myckstr = "Y" then
-			my1 = mid(a, 5 - len(c(0)), len(c(0)))
-		elseif myckstr = "M" then
-			my1 = mid(a, 5, 2)
-		else
-			my1 = mid(a, 7, 2)
-		end if
-		myckstr = mid(c(1), 1, 1)
-		if myckstr = "Y" then
-			my2 = mid(a, 5 - len(c(1)), len(c(1)))
-		elseif myckstr = "M" then
-			my2 = mid(a, 5, 2)
-		else
-			my2 = mid(a, 7, 2)
-		end if
-
-		myckstr = mid(c(2), 1, 1)
-		if myckstr = "Y" then
-			my3 = mid(a, 5 - len(c(2)), len(c(2)))
-		elseif myckstr = "M" then
-			my3 = mid(a, 5, 2)
-		else
-			my3 = mid(a, 7, 2)
-		end if
-		num2date = my1&mydm&my2&mydm&my3
-	end if
-end function
-'=================================================================
-class MyWaitBar
-	public idotcnt
-	public waitingBar
-	public waitingTime
-
-'	Private Sub Class_Initialize()
-'	End Sub
-'	Private Sub Class_Terminate()
-'	End Sub
-'	Property Get
-'	End Property
-'	Property Let x(ByVal in_x)
-'	End Property
-	public default function Init(mybar, mytime)
-		idotcnt = 0
-		set waitingBar = mybar
-		set waitingTime = mytime
-		mytime.Enabled = false
-		mytime.TimerGubun = 0
-		mytime.Interval = 500
-		waitingBar.visible = false
-		waitingBar.Align = 0
-		waitingTime.Enabled = false
-		set Init = me
-	End function
-
-
-	public sub showBar(bData)
-		if bData = true then
-			idotcnt = 0
-			waitingBar.Visible true
-			waitingBar.Caption "     DATA¸¦ °¡Á®¿À´Â ÁßÀÔ´Ï´Ù."
-			waitingTime.Enabled true
-		else
-			waitingBar.Visible false
-			waitingTime.Enabled false
-		end if
-	end sub
-
-	public sub Timer()
-		idotcnt = idotcnt + 1
-		if idotcnt = 3 then
-			idotcnt = 0
-		end if
-		sDot = "."
-		for i = 0 to idotcnt
-			sDot = sDot&sDot
-		next
-		waitingBar.Caption "     DATA¸¦ °¡Á®¿À´Â ÁßÀÔ´Ï´Ù"&sDot
-	End Sub
-end class
-
-'==============================================
-' class to display progress bar
+''==============================================
+'' def retrun date format string
+'' ex) num2date("20180920", "YYYY-MM-DD") = "2018-09-20"
+'function num2date(mysrc, myformat)
 '
-class wait_pr_bar
-	public idotcnt
-	public waitingBar
-	public waitingTime
-
-'	Private Sub Class_Initialize()
+'	if instr(mysrc, ".") > 0 then
+'		mytemp = split(mysrc, ".")
+'		mysrc = mytemp(0)
+'	end if
+'
+'	if mysrc = "" or mysrc = "0" then
+'		num2date = ""
+'	else
+'		a = mysrc
+'		b = UCase(myformat)
+'		mydm = ""
+'		if instr(b, "/") > 0 then
+'			mydm = "/"
+'		elseif instr(b, "-") > 0 then
+'			mydm = "-"
+'		elseif instr(b, ".") > 0 then
+'			mydm = "."
+'		end if
+'
+'		c = split(b, mydm)
+'		myckstr = mid(c(0),1,1)
+'		if myckstr = "Y" then
+'			my1 = mid(a, 5 - len(c(0)), len(c(0)))
+'		elseif myckstr = "M" then
+'			my1 = mid(a, 5, 2)
+'		else
+'			my1 = mid(a, 7, 2)
+'		end if
+'		myckstr = mid(c(1), 1, 1)
+'		if myckstr = "Y" then
+'			my2 = mid(a, 5 - len(c(1)), len(c(1)))
+'		elseif myckstr = "M" then
+'			my2 = mid(a, 5, 2)
+'		else
+'			my2 = mid(a, 7, 2)
+'		end if
+'
+'		myckstr = mid(c(2), 1, 1)
+'		if myckstr = "Y" then
+'			my3 = mid(a, 5 - len(c(2)), len(c(2)))
+'		elseif myckstr = "M" then
+'			my3 = mid(a, 5, 2)
+'		else
+'			my3 = mid(a, 7, 2)
+'		end if
+'		num2date = my1&mydm&my2&mydm&my3
+'	end if
+'end function
+''=================================================================
+'class MyWaitBar
+'	public idotcnt
+'	public waitingBar
+'	public waitingTime
+'
+''	Private Sub Class_Initialize()
+''	End Sub
+''	Private Sub Class_Terminate()
+''	End Sub
+''	Property Get
+''	End Property
+''	Property Let x(ByVal in_x)
+''	End Property
+'	public default function Init(mybar, mytime)
+'		idotcnt = 0
+'		set waitingBar = mybar
+'		set waitingTime = mytime
+'		mytime.Enabled = false
+'		mytime.TimerGubun = 0
+'		mytime.Interval = 500
+'		waitingBar.visible = false
+'		waitingBar.Align = 0
+'		waitingTime.Enabled = false
+'		set Init = me
+'	End function
+'
+'
+'	public sub showBar(bData)
+'		if bData = true then
+'			idotcnt = 0
+'			waitingBar.Visible true
+'			waitingBar.Caption "     DATAï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½."
+'			waitingTime.Enabled true
+'		else
+'			waitingBar.Visible false
+'			waitingTime.Enabled false
+'		end if
+'	end sub
+'
+'	public sub Timer()
+'		idotcnt = idotcnt + 1
+'		if idotcnt = 3 then
+'			idotcnt = 0
+'		end if
+'		sDot = "."
+'		for i = 0 to idotcnt
+'			sDot = sDot&sDot
+'		next
+'		waitingBar.Caption "     DATAï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½"&sDot
 '	End Sub
-'	Private Sub Class_Terminate()
+'end class
+'
+''==============================================
+'' class to display progress bar
+''
+'class wait_pr_bar
+'	public idotcnt
+'	public waitingBar
+'	public waitingTime
+'
+''	Private Sub Class_Initialize()
+''	End Sub
+''	Private Sub Class_Terminate()
+''	End Sub
+''	Property Get
+''	End Property
+''	Property Let x(ByVal in_x)
+''	End Property
+'	public default function Init(mybar, mytime)
+'		idotcnt = 0
+'		set waitingBar = mybar
+'		set waitingTime = mytime
+'		mytime.Enabled = false
+'		mytime.TimerGubun = 0
+'		mytime.Interval = 500
+'		waitingBar.visible = false
+'		waitingBar.Align = 0
+'		waitingTime.Enabled = false
+'		set Init = me
+'	End function
+'
+'
+'	public sub progBar(bData)
+'		if bData = true then
+'			idotcnt = 0
+'			waitingBar.Visible true
+'			waitingBar.Caption "     DATAï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½."
+'			waitingTime.Enabled true
+'		else
+'			waitingBar.Visible false
+'			waitingTime.Enabled false
+'		end if
+'	end sub
+'
+'	public sub Timer()
+'		idotcnt = idotcnt + 1
+'		if idotcnt = 3 then
+'			idotcnt = 0
+'		end if
+'		sDot = "."
+'		for i = 0 to idotcnt
+'			sDot = sDot&sDot
+'		next
+'		waitingBar.Caption "     DATAï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½"&sDot
 '	End Sub
-'	Property Get
-'	End Property
-'	Property Let x(ByVal in_x)
-'	End Property
-	public default function Init(mybar, mytime)
-		idotcnt = 0
-		set waitingBar = mybar
-		set waitingTime = mytime
-		mytime.Enabled = false
-		mytime.TimerGubun = 0
-		mytime.Interval = 500
-		waitingBar.visible = false
-		waitingBar.Align = 0
-		waitingTime.Enabled = false
-		set Init = me
-	End function
-
-
-	public sub progBar(bData)
-		if bData = true then
-			idotcnt = 0
-			waitingBar.Visible true
-			waitingBar.Caption "     DATA¸¦ °¡Á®¿À´Â ÁßÀÔ´Ï´Ù."
-			waitingTime.Enabled true
-		else
-			waitingBar.Visible false
-			waitingTime.Enabled false
-		end if
-	end sub
-
-	public sub Timer()
-		idotcnt = idotcnt + 1
-		if idotcnt = 3 then
-			idotcnt = 0
-		end if
-		sDot = "."
-		for i = 0 to idotcnt
-			sDot = sDot&sDot
-		next
-		waitingBar.Caption "     DATA¸¦ °¡Á®¿À´Â ÁßÀÔ´Ï´Ù"&sDot
-	End Sub
-end class
+'end class
 '====================================================
 ' class to display last favorite lists in Edit or Grid
 '
@@ -1021,7 +1028,7 @@ class MyItemCtl
 		myEdit.caption = myLast.getList()
 
 		'init subsidary position
-		myDDBt.caption = "¡å"
+		myDDBt.caption = "ï¿½ï¿½"
 		myDDBt.top = myEdit.top + 2
 		myDDBt.width = myEdit.height - 4
 		myDDBt.height = myDDBt.width
@@ -1252,7 +1259,7 @@ class MyGuideList
 		myList.Top = myEdit.Top + myEdit.Height
 
 		myTimer.Enabled = false
-		myTimer.TimerGubun = 0 'ÀÏ¹Ý¿ë
+		myTimer.TimerGubun = 0 'ï¿½Ï¹Ý¿ï¿½
 		myTimer.Interval = 100
 		set Init = me
 	End Function
@@ -1405,161 +1412,161 @@ class MyGuideList
 	end sub
 end class
 
-'===============================================
-' 3710, 3712 ¿¡¼­ »ç¿ë
-
-Function getCmmdCd(szData)
-	getCmmdCd = "01"
-	If RIGHT(szData,1) = "M" then
-		getCmmdCd = "05"
-	elseif RIGHT(szData,1) = "Q" then
-		getCmmdCd = "06"
-	elseif LEFT(RIGHT(szData,2), 1) = "W" then
-		getCmmdCd = "09"
-	Else
-		getCmmdCd = "01"
-	End If
-
-End Function
-
-'===============================================
-' get option code
-' szCallPut --> CallÀº "C", PutÀº "P"
-' szYYYYMM  --> Ex) 200811
-' szHPrc    --> Ex) 257
-Function  GetOptCode(szCallPut, szYYYYMM, szHPrc)
-
-	OptCode = "2"&getCmmdCd(szYYYYMM)
-
-	If szCallPut = "P" Then
-		OptCode = "3"&getCmmdCd(szYYYYMM)
-	End If
-
-	iYYYYMM = CLng(mid(szYYYYMM,1,6))
-	iYYYY = iYYYYMM / 100
-	iMM = iYYYYMM Mod 100
-	yCode = Chr(66 + (iYYYY - 2005)) ' Chr(66) = "B" ÀÌ°í 2007 ºÎÅÍ ½ÃÀÛ -> I ºüÁö¸é¼­ 2006À¸·Î ¼öÁ¤ -> O ºüÁö¸é¼­ 2005·Î ¼öÁ¤
-	mCode = HEX(iMM)
-	GetOptCode = OptCode & yCode & mCode + szHPrc
-
-
-End Function
-'===========================================================
-' gridpro sort
+''===============================================
+'' 3710, 3712 ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?
 '
-class MyGridSort
-	private m_colMatch
-	private m_sortState
-	private myList
-	private sorttp(1)
-	private m_sorted
-	private m_sortCol
-
-	Private Sub Class_Initialize()
-      		set m_colMatch = new MyDic
-      		set m_sortState = new MyDic
-		sorttp(0) = 1
-		sorttp(1) = 2
-		m_sorted = false
-	end sub
-
-	Private Sub Class_Terminate()
-		set m_colMatch = Nothing
-      		set m_sortState = Nothing
-	End Sub
-
-	Public Default Function Init(pGridL)
-		set myList = pGridL
-		set Init = me
-	end Function
-
-	public sub add(labelcol, sortcol)
-		call m_colMatch.Add(labelcol, sortcol)
-		call m_sortState.Add(labelcol, 0)
-	end sub
-
-	public sub OnTHLClicked(lRow , lCol , bUpDn , pvarProcessed)
-		if bUpDn = false then
-			m_sorted = true
-			m_sortCol = lCol
-		end if
-	end sub
-
-	public sub OnSortCompleted()
-		if m_colMatch.Exists(m_sortCol) and m_sorted = true then
-			m_sorted = false
-			sortidx = 1 xor m_sortState.Item(m_sortCol)
-			call m_sortState.Modify(m_sortCol, sortidx)
-			call myList.Sort(0, m_colMatch.Item(m_sortCol), sorttp(m_sortState.Item(m_sortCol)))
-		end if
-	end sub
-end class
-
-'==================================================================
-'strip function
+'Function getCmmdCd(szData)
+'	getCmmdCd = "01"
+'	If RIGHT(szData,1) = "M" then
+'		getCmmdCd = "05"
+'	elseif RIGHT(szData,1) = "Q" then
+'		getCmmdCd = "06"
+'	elseif LEFT(RIGHT(szData,2), 1) = "W" then
+'		getCmmdCd = "09"
+'	Else
+'		getCmmdCd = "01"
+'	End If
 '
-function myStrip(mysrc, stripstr)
-	myStrip = myLStrip(myRStrip(mysrc, stripstr), stripstr)
-end function
- 
-function myRStrip(mysrc, stripstr)
-	mydes=""
-	for i = 0  to len(mysrc)-1
-		mystr = mid(mysrc,len(mysrc)-i,1) 
-		if instr(stripstr, mystr) > 0 then
-			'noop
-		else
-			mydes = left(mysrc, len(mysrc)-i)
-			exit for
-		end if
-	next
-	myRStrip = mydes
-end function
+'End Function
 
-function myLStrip(mysrc, stripstr)
-	mydes =""
-	for i = len(mysrc) -1 to 0 step -1
-		mystr = mid(mysrc,len(mysrc)-i,1) 
-		if instr(stripstr, mystr) > 0 then
-			'noop
-		else
-			mydes = mid(mysrc, len(mysrc)-i, len(mysrc))
-			exit for
-		end if
-	next
-	myLStrip = mydes
-end function
-'=================================================================
-sub setAllCkAndCap(obj, iIndex, bCheck, bShowAllCap)
-	if iIndex = 0 then
-		obj.SetAllCheck bCheck
-	else
-		obj.SetSelCheck 0 , false
-		obj.SetSelCheck iIndex, bCheck
-	end if 
-	mycaplist = split(obj.GetCheckColList(true, 1), "@")
-	mykeylist = split(obj.GetCheckColList(true, 0), "@")
-	mycap = ""
-	if ubound(mycaplist) = -1 then
-		mycap = "ÀüÃ¼¼±ÅÃ"
-	else
-		if (lcase(mycaplist(0)) = "all" or instr(mycaplist(0), "ÀüÃ¼") > 0) and lcase(mykeylist(0)) = "all" then
-			if bShowAllCap = true or ubound(mycaplist) = 0 then
-				mycap = "ÀüÃ¼¼±ÅÃ"
-			else
-				mycaplist = mySlice(mycaplist, 1, ubound(mycaplist))
-				mycap = join(mycaplist, ",")
-			end if
-		else
-			mycap = join(mycaplist, ",")
-		end if
-	end if
-	obj.Caption = mycap
-end sub 
-'=================================================================
-sub ckAll(obj, iIndex, bCheck)
-	call setAllCkAndCap(obj, iIndex, bCheck, true)
-end sub
+''===============================================
+'' get option code
+'' szCallPut --> Callï¿½ï¿½ "C", Putï¿½ï¿½ "P"
+'' szYYYYMM  --> Ex) 200811
+'' szHPrc    --> Ex) 257
+'Function  GetOptCode(szCallPut, szYYYYMM, szHPrc)
+'
+'	OptCode = "2"&getCmmdCd(szYYYYMM)
+'
+'	If szCallPut = "P" Then
+'		OptCode = "3"&getCmmdCd(szYYYYMM)
+'	End If
+'
+'	iYYYYMM = CLng(mid(szYYYYMM,1,6))
+'	iYYYY = iYYYYMM / 100
+'	iMM = iYYYYMM Mod 100
+'	yCode = Chr(66 + (iYYYY - 2005)) ' Chr(66) = "B" ï¿½Ì°ï¿½ 2007 ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ -> I ï¿½ï¿½ï¿½ï¿½ï¿½é¼­ 2006ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ -> O ï¿½ï¿½ï¿½ï¿½ï¿½é¼­ 2005ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+'	mCode = HEX(iMM)
+'	GetOptCode = OptCode & yCode & mCode + szHPrc
+'
+'
+'End Function
+'''===========================================================
+'' gridpro sort
+''
+'class MyGridSort
+'	private m_colMatch
+'	private m_sortState
+'	private myList
+'	private sorttp(1)
+'	private m_sorted
+'	private m_sortCol
+'
+'	Private Sub Class_Initialize()
+'      		set m_colMatch = new MyDic
+'      		set m_sortState = new MyDic
+'		sorttp(0) = 1
+'		sorttp(1) = 2
+'		m_sorted = false
+'	end sub
+'
+'	Private Sub Class_Terminate()
+'		set m_colMatch = Nothing
+'      		set m_sortState = Nothing
+'	End Sub
+'
+'	Public Default Function Init(pGridL)
+'		set myList = pGridL
+'		set Init = me
+'	end Function
+'
+'	public sub add(labelcol, sortcol)
+'		call m_colMatch.Add(labelcol, sortcol)
+'		call m_sortState.Add(labelcol, 0)
+'	end sub
+'
+'	public sub OnTHLClicked(lRow , lCol , bUpDn , pvarProcessed)
+'		if bUpDn = false then
+'			m_sorted = true
+'			m_sortCol = lCol
+'		end if
+'	end sub
+'
+'	public sub OnSortCompleted()
+'		if m_colMatch.Exists(m_sortCol) and m_sorted = true then
+'			m_sorted = false
+'			sortidx = 1 xor m_sortState.Item(m_sortCol)
+'			call m_sortState.Modify(m_sortCol, sortidx)
+'			call myList.Sort(0, m_colMatch.Item(m_sortCol), sorttp(m_sortState.Item(m_sortCol)))
+'		end if
+'	end sub
+'end class
+'
+''==================================================================
+''strip function
+''
+'function myStrip(mysrc, stripstr)
+'	myStrip = myLStrip(myRStrip(mysrc, stripstr), stripstr)
+'end function
+' 
+'function myRStrip(mysrc, stripstr)
+'	mydes=""
+'	for i = 0  to len(mysrc)-1
+'		mystr = mid(mysrc,len(mysrc)-i,1) 
+'		if instr(stripstr, mystr) > 0 then
+'			'noop
+'		else
+'			mydes = left(mysrc, len(mysrc)-i)
+'			exit for
+'		end if
+'	next
+'	myRStrip = mydes
+'end function
+'
+'function myLStrip(mysrc, stripstr)
+'	mydes =""
+'	for i = len(mysrc) -1 to 0 step -1
+'		mystr = mid(mysrc,len(mysrc)-i,1) 
+'		if instr(stripstr, mystr) > 0 then
+'			'noop
+'		else
+'			mydes = mid(mysrc, len(mysrc)-i, len(mysrc))
+'			exit for
+'		end if
+'	next
+'	myLStrip = mydes
+'end function
+''=================================================================
+'sub setAllCkAndCap(obj, iIndex, bCheck, bShowAllCap)
+'	if iIndex = 0 then
+'		obj.SetAllCheck bCheck
+'	else
+'		obj.SetSelCheck 0 , false
+'		obj.SetSelCheck iIndex, bCheck
+'	end if 
+'	mycaplist = split(obj.GetCheckColList(true, 1), "@")
+'	mykeylist = split(obj.GetCheckColList(true, 0), "@")
+'	mycap = ""
+'	if ubound(mycaplist) = -1 then
+'		mycap = "ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½"
+'	else
+'		if (lcase(mycaplist(0)) = "all" or instr(mycaplist(0), "ï¿½ï¿½Ã¼") > 0) and lcase(mykeylist(0)) = "all" then
+'			if bShowAllCap = true or ubound(mycaplist) = 0 then
+'				mycap = "ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½"
+'			else
+'				mycaplist = mySlice(mycaplist, 1, ubound(mycaplist))
+'				mycap = join(mycaplist, ",")
+'			end if
+'		else
+'			mycap = join(mycaplist, ",")
+'		end if
+'	end if
+'	obj.Caption = mycap
+'end sub 
+''=================================================================
+'sub ckAll(obj, iIndex, bCheck)
+'	call setAllCkAndCap(obj, iIndex, bCheck, true)
+'end sub
 '=================================================================
 ' class to display list received from szTranID in Grid at generating edit control key event
 '
@@ -1646,7 +1653,7 @@ class MyGuideList2
 		myList.Top = myEdit.Top + myEdit.Height
 
 		myTimer.Enabled = false
-		myTimer.TimerGubun = 0 'ÀÏ¹Ý¿ë
+		myTimer.TimerGubun = 0 'ï¿½Ï¹Ý¿ï¿½
 		myTimer.Interval = 50
 
 		if lcase(typename(pLabel_or_nouse)) = "string" or  lcase(typename(pLabel_or_nouse)) = "nothing" then
@@ -1755,7 +1762,8 @@ class MyGuideList2
 
 	public sub myReq(myid)
 		TRANMANAGER.SetItemData myTranID, "InBlock0", "sQryTp", 0 , "P"
-		TRANMANAGER.SetItemData myTranID, "InBlock0", "sNode", 0 , split(m_myItemTp,"_")(0)
+		'TRANMANAGER.SetItemData myTranID, "InBlock0", "sNode", 0 , split(m_myItemTp,"_")(0)
+		TRANMANAGER.SetItemData myTranID, "InBlock0", "sNode", 0 , m_myItemTp
 		TRANMANAGER.SetItemData myTranID, "InBlock0", "sQryStr", 0, myid
 		if m_forceItem = true then
 			TRANMANAGER.SetItemData myTranID, "InBlock0", "sField", 0, "force"
@@ -1979,7 +1987,7 @@ class MyItemCtlMulti
 		'myEdit.caption = myLast.getList()
 		
 		'init subsidary position
-		myDDBt.caption = "¡å"
+		myDDBt.caption = "ï¿½ï¿½"
 		myDDBt.top = myEdit.top 
 		myDDBt.height = myEdit.height
 		call useDDBtn(true)
@@ -2123,7 +2131,7 @@ class MyItemCtlMulti
 
 	sub OnEditEnter() 'edit
 		bDDList = false
-		myDDBt.caption = "¡å"
+		myDDBt.caption = "ï¿½ï¿½"
 		if myDDList.Visible = true then
 			call LButtonDown(0, 0, 0)
 		end if
@@ -2136,7 +2144,7 @@ class MyItemCtlMulti
 
 	public sub OnKillFocus()
 		'call myDDBt_OnClick()
-		myDDBt.caption = "¡å"
+		myDDBt.caption = "ï¿½ï¿½"
 		bDDList = false
 		myDDList.visible bDDList
 	end sub
@@ -2171,7 +2179,7 @@ class MyItemCtlMulti
 
 	sub LButtonDown(lRow , lSubRow , lCol)
 		bDDList = false
-		myDDBt.caption = "¡å"
+		myDDBt.caption = "ï¿½ï¿½"
 		call setList(getSelInfo())
 		call myGuide.LButtonDblClk(lRow , lSubRow , lCol)
 	end sub 
@@ -2267,20 +2275,20 @@ class MyItemCtlMulti
 
 	Public Sub myDDBt_OnClick()
 		if bDDList = true then
-			myDDBt.caption = "¡å"
+			myDDBt.caption = "ï¿½ï¿½"
 			bDDList = false
 			myDDList.visible bDDList
 		else
 			if myLast.getTotal() = 0 then
 				bDDList = false
 			else
-				myDDBt.caption = "¡ã"
+				myDDBt.caption = "ï¿½ï¿½"
 				bDDList = true
 				call getList()
 				myDDList.height = 20 * myDDList.GetTotalRowCount( )+3
 
 			end if
-			'myDDBt.caption = "¡ã"
+			'myDDBt.caption = "ï¿½ï¿½"
 			'bDDList = true
 		end if
 
@@ -2358,1022 +2366,1022 @@ class MyItemCtlMulti
 		end if
 	End Sub
 end class
-'===============================================================
-class MyCheckCombo
-	private listGrid
-	private ddButton
-	private searchEdit
-	private statusEdit
-	private useSearch
-	private dropDownST
-	private dropDownSets
-	private isEditA
-	private isGridA
-	private shTimer
-	
-	private sub Class_Initialize()
-		isEditA = false
-		isGridA = false
-	end sub
-
-	Private Sub Class_Terminate()
-	End Sub
-
-	public default function Init(plistGrid, pddButton, psearchEdit, pstatusEdit, pTimer)
-		set listGrid = plistGrid
-		set ddButton = pddButton
-		set searchEdit = psearchEdit
-		set statusEdit = pstatusEdit
-		set shTimer = pTimer
-		shTimer.Enabled = false
-		shTimer.TimerGubun = 0
-		shTimer.Interval = 300
-		listGrid.DeleteAllRow 
-		'default
-		'call listGrid.InsertCol(listGrid.GetColCount, 2, 0) 
-		call showKeyCol(true)
-		useSearch = true
-		dropdownST = true
-		call deploy()
-		call setSearchEditCaption("ÅëÈ­¸¦ °Ë»öÇÏ¼¼¿ä")
-		call setlistGridHeight(18)
-		set Init = me
-	end function
-	
-	property let Caption(ByVal mys) 
-		call setStatusEdit()
-	end property
- 
-	sub Enabled(b)
-		call ddButton.Enabled(b)
-		call statusEdit.Enabled(b)
-	end sub
-
-	sub OnSetFocus(myo)
-		if Instr(lcase(typename(myo)), "grid") > 0 then
-			isGridA = true
-		else
-			isEditA = true
-		end if
-		shTimer.Enabled true
-	end sub
-
-	sub OnKillFocus(myo)
-		if Instr(lcase(typename(myo)), "grid") > 0 then
-			isGridA = false
-		else
-			isEditA = false
-		end if
-		shTimer.Enabled true
-	end sub
-
-	sub Timer()
-		shTimer.Enabled false
-		call myVisible()
-	end sub
-	
-	sub myVisible()
-		if isGridA = false and isEditA = false then
-			searchEdit.Visible false
-			listGrid.Visible false
-			call ddButtonST(true)
-		end if	
-	end sub
-
-	sub setSearchEditCaption(myCap)
-		searchEdit.caption = myCap
-	end sub
-	
-	sub setlistGridHeight(myH)
-		if Form.GetScreenHeight( ) <= myH * 18 + listGrid.top then
-			tmpH = myH
-			for resize = 1 to myH
-				tmpH = myH - resize
-				if Form.GetScreenHeight( ) > tmpH * 18 + listGrid.top then
-					exit for
-				end if
-			next
-			myH = tmpH
-		end if
-		listGrid.Height = myH * 18
-	end sub
-	
-	sub deploy()
-		ddButton.top = statusEdit.top
-		ddButton.left = statusEdit.left + statusEdit.width - 1
-		ddButton.height = statusEdit.height
-		ddButton.width = 16
-		ddButton.caption = "¡å"
-
-		searchEdit.left = statusEdit.left
-		listGrid.left = statusEdit.left
-		searchEdit.width = statusEdit.width + ddButton.width
-		listGrid.width = searchEdit.width
-		listGrid.SetColWidth 0 , 15
-		if useSearch = true then
-			dropDownSets = array(searchEdit, listGrid)
-			searchEdit.top = statusEdit.top + statusEdit.height
-			listGrid.top = statusEdit.top + statusEdit.height + searchEdit.Height
-		else
-			dropDownSets = array(listGrid)
-			listGrid.top = statusEdit.top + statusEdit.height
-		end if	
-		
-		set myColor =  new MyIdxColor
-		searchEdit.ForeColor myColor.getIdxRGB(13)
-		searchEdit.BackColor myColor.getIdxRGB(101)
-		call setSearchEdit(useSearch)
-		call ddButton_OnClick()
-	end sub
-
-	sub ddButtonST(myst)
-		if myst = true then
-			dropDownST = false
-			isEditA = false
-			isGridA = false
-			ddButton.caption = "¡å"
-		else
-			dropDownST = true
-			isEditA = false
-			isGridA = true
-			ddButton.caption = "¡ã"
-		end if
-	end sub
-	
-	sub OnClick()
-		call ddButton_OnClick()
-	end sub
-	sub ddButton_OnClick()
-		call ddButtonST(dropDownST)
-		for each myobj in dropDownSets
-			myobj.visible dropDownST
-		next
-		listGrid.SetFocusGrid 
-	end sub
-
-	sub OnChange()
-		call searchEdit_OnChange()
-	end sub
-
-	sub searchEdit_OnChange()
-		set myColor =  new MyIdxColor
-		searchEdit.ForeColor myColor.getIdxRGB(1)
-		mySStr = lcase(TRIM(searchEdit.GetDisplayCaption) )
-		for i = 0 to listGrid.GetTotalRowCount -1
-			if Instr(lcase(listGrid.GetCellString(i, 0, 1)), mySStr) > 0 or Instr(lcase(listGrid.GetCellString(i, 0, 2)), mySStr) > 0 then
-				listGrid.CurRow = i
-				exit for
-			end if
-		next
-	end sub
-	
-	sub setSearchEdit(myD)
-		useSearch = myD
-		searchEdit.visible myD
-	end sub
-	
-	sub showKeyCol(isShow)
-		call listGrid.SetColShow(0, 1, isShow)
-	end sub
-	
-	sub AddRow(mystr)
-		strRowData = mystr
-		call listGrid.InsertEmptyRow(listGrid.GetTotalRowCount, 1 , true , false )
-		call listGrid.RealUpdateRowData(strRowData , listGrid.GetTotalRowCount-1, 1 , 2 , false)
-		call setStatusEdit()
-	end sub
-	
-	sub AddRowWithForeOrBackColor(mystr, pForeOrBack, ColorIndex)
-		call AddRow(mystr)
-		
-		ForeOrBack = 0
-		if pForeOrBack = "F" or CStr(pForeOrBack) = "1" then
-			ForeOrBack = 1
-		end if
-
-		for lCol = 0 to listGrid.GetColCount -1
-			call listGrid.SetCellIndexColor(listGrid.GetTotalRowCount - 1, 0, lCol , ForeOrBack , ColorIndex )
-		next
-		call setStatusEdit()
-	end sub
-
-	function GetIndexByColCaption(iCol, mykey)
-		i = -1
-		for lRow = 0 to listGrid.GetTotalRowCount - 1
-			if listGrid.GetCellString(lRow, 0, iCol+1) = mykey then
-				i = lRow
-				exit for
-			end if
-		next
-		GetIndexByColCaption = i
-	end function
-	
-	sub allCheck()
-		myCheck = "0"
-		if listGrid.GetCellString(0, 0, 0) = "1" then
-			myCheck = "1"
-		end if
-		for i = 0 to listGrid.GetTotalRowCount -1
-			call listGrid.SetCellString(i, 0, 0, myCheck)
-		next
-	end sub
-
-	sub OnLClicked(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
-		if (lCol = 0 and bUpDn = true) or (lCol > 0 and bUpDn = false) then 
-			call listGrid_OnLClicked2(lRow , lSubRow , lCol)
-		end if
-	end sub
-
-	sub OnLClicked2(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
-		call OnLClicked(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
-	end sub
-
-
-	sub setStatusEdit()
-		mySelList = split(replace(replace(GetCheckColList(true,0),"all@",""), "ALL@",""),"@")
-		mySel = ubound(mySelList)+1
-		myTot = listGrid.GetTotalRowCount-1
-		if myTot = -1 then
-			statusEdit.caption = ""
-		else
-			mystr = mySel&"/"&myTot
-
-			if mySel = myTot then ' all check
-				mystr = mystr&",all ÀüÃ¼¼±ÅÃ"	
-			else
-				for each myAddStr in mySelList
-					mystr = mystr&","&myAddStr
-					if statusEdit.width <= len(mystr)*8 then
-						mystr = mystr&"+"
-						exit for
-					end if
-				next
-			end if
-			statusEdit.caption = mystr
-		end if
-	end sub
-	
-	sub listGrid_OnLClicked2(lRow , lSubRow , lCol)
-		if lCol > 0 then
-			setval = "0"
-			if listGrid.GetCellString(lRow, 0, 0) = "0" then
-				setval = "1"
-			end if
-			call listGrid.SetCellString(lRow, 0, 0, setval)
-		end if
-
-		' if all check ex
-		if lRow = 0 then
-			if lcase(listGrid.GetCellString(0, lSubRow , 1)) = "all" then
-				call allCheck()
-			end if 
-		else
-			if lcase(listGrid.GetCellString(0, lSubRow , 1)) = "all" then
-				call listGrid.SetCellString(0, 0, 0, "0")
-			end if 
-		end if
-		call setStatusEdit()
-	end sub 
-
-	function GetCellString(iRow , iCol)
-		GetCellString = listGrid.GetCellString(iRow, 0, iCol+1)
-	end function
-
-	function GetSelCheck(iIndex)
-		GetSelCheck = listGrid.GetCellString(iIndex, 0, 0)
-	end function
-
-	sub SetSelCheck(iIndex , bCheck)
-		if bCheck = true then
-			bCheck = "1"
-		else
-			bCheck = "0"
-		end if 	
-		call listGrid.SetCellString(iIndex, 0, 0, bCheck)
-		call setStatusEdit()
-	end sub
-
-	function GetCheckColList(bCheck, iIdx)
-		if bCheck = true then
-			bCheck = "1"
-		else
-			bCheck = "0"
-		end if
-		
-		set myarr = new MyArrayList
-		for lRow =0 to listGrid.GetTotalRowCount - 1
-			if listGrid.GetCellString(lRow, 0, 0) = bCheck then
-				myarr.add(listGrid.GetCellString(lRow, 0, iIdx+1))
-			end if
-		next
-		GetCheckColList = join(myarr.getArray(), "@")
-	end function
-
-	function GetCheckRowList(bCheck)
-		if bCheck = true then
-			bCheck = "1"
-		else
-			bCheck = "0"
-		end if
-		
-		set myarr = new MyArrayList
-		for lRow =0 to listGrid.GetTotalRowCount - 1
-			if listGrid.GetCellString(lRow, 0, 0) = bCheck then
-				myarr.add(lRow)
-			end if
-		next
-		GetCheckRowList = join(myarr.getArray(), "@")
-	end function
-
-	function GetTotalRow()
-		GetTotalRow = listGrid.GetTotalRowCount
-	end function
-
-	sub SetAllCheck(bCheck)
-		if bCheck = true then
-			myCheck = "1"
-		else
-			myCheck = "0"
-		end if
-
-		for i = 0 to listGrid.GetTotalRowCount -1
-			call listGrid.SetCellString(i, 0, 0, myCheck)
-		next
-	end sub
-end class
-'===============================================================
-class MyGridAsCheckCombo
-	private listGrid
-	private ddButton
-	private searchEdit
-	private statusEdit
-	private useSearch
-	private dropDownST
-	private dropDownSets
-	private isEditA
-	private isGridA
-	private shTimer
-	
-	private sub Class_Initialize()
-		isEditA = false
-		isGridA = false
-	end sub
-
-	Private Sub Class_Terminate()
-	End Sub
-
-	public default function Init(plistGrid, pddButton, psearchEdit, pstatusEdit, pTimer)
-		set listGrid = plistGrid
-		set ddButton = pddButton
-		set searchEdit = psearchEdit
-		set statusEdit = pstatusEdit
-		set shTimer = pTimer
-		shTimer.Enabled = false
-		shTimer.TimerGubun = 0
-		shTimer.Interval = 300
-		listGrid.DeleteAllRow 
-		'default
-		'call listGrid.InsertCol(listGrid.GetColCount, 2, 0) 
-		call showKeyCol(true)
-		useSearch = true
-		dropdownST = true
-		call deploy()
-		call setSearchEditCaption("ÅëÈ­¸¦ °Ë»öÇÏ¼¼¿ä")
-		call setlistGridHeight(18)
-		set Init = me
-	end function
-	
-	property let Caption(ByVal mys) 
-		call setStatusEdit()
-	end property
- 
-	sub Enabled(b)
-		call ddButton.Enabled(b)
-		call statusEdit.Enabled(b)
-	end sub
-
-	sub OnSetFocus(myo)
-		if Instr(lcase(typename(myo)), "grid") > 0 then
-			isGridA = true
-		else
-			isEditA = true
-		end if
-		shTimer.Enabled true
-	end sub
-
-	sub OnKillFocus(myo)
-		if Instr(lcase(typename(myo)), "grid") > 0 then
-			isGridA = false
-		else
-			isEditA = false
-		end if
-		shTimer.Enabled true
-	end sub
-
-	sub Timer()
-		shTimer.Enabled false
-		call myVisible()
-	end sub
-	
-	sub myVisible()
-		if isGridA = false and isEditA = false then
-			searchEdit.Visible false
-			listGrid.Visible false
-			call ddButtonST(true)
-		end if	
-	end sub
-
-	sub setSearchEditCaption(myCap)
-		searchEdit.caption = myCap
-	end sub
-	
-	sub setlistGridHeight(myH)
-		if Form.GetScreenHeight( ) <= myH * 18 + listGrid.top then
-			tmpH = myH
-			for resize = 1 to myH
-				tmpH = myH - resize
-				if Form.GetScreenHeight( ) > tmpH * 18 + listGrid.top then
-					exit for
-				end if
-			next
-			myH = tmpH
-		end if
-		listGrid.Height = myH * 18
-	end sub
-	
-	sub deploy()
-		ddButton.top = statusEdit.top
-		ddButton.left = statusEdit.left + statusEdit.width - 1
-		ddButton.height = statusEdit.height
-		ddButton.width = 16
-		ddButton.caption = "¡å"
-
-		searchEdit.left = statusEdit.left
-		listGrid.left = statusEdit.left
-		searchEdit.width = statusEdit.width + ddButton.width
-		listGrid.width = searchEdit.width
-		listGrid.SetColWidth 0 , 15
-		if useSearch = true then
-			dropDownSets = array(searchEdit, listGrid)
-			searchEdit.top = statusEdit.top + statusEdit.height
-			listGrid.top = statusEdit.top + statusEdit.height + searchEdit.Height
-		else
-			dropDownSets = array(listGrid)
-			listGrid.top = statusEdit.top + statusEdit.height
-		end if	
-		
-		set myColor =  new MyIdxColor
-		searchEdit.ForeColor myColor.getIdxRGB(13)
-		searchEdit.BackColor myColor.getIdxRGB(101)
-		call setSearchEdit(useSearch)
-		call ddButton_OnClick()
-	end sub
-
-	sub ddButtonST(myst)
-		if myst = true then
-			dropDownST = false
-			isEditA = false
-			isGridA = false
-			ddButton.caption = "¡å"
-		else
-			dropDownST = true
-			isEditA = false
-			isGridA = true
-			ddButton.caption = "¡ã"
-		end if
-	end sub
-	
-	sub OnClick()
-		call ddButton_OnClick()
-	end sub
-	sub ddButton_OnClick()
-		call ddButtonST(dropDownST)
-		for each myobj in dropDownSets
-			myobj.visible dropDownST
-		next
-		listGrid.SetFocusGrid 
-	end sub
-
-	sub OnChange()
-		call searchEdit_OnChange()
-	end sub
-
-	sub searchEdit_OnChange()
-		set myColor =  new MyIdxColor
-		searchEdit.ForeColor myColor.getIdxRGB(1)
-		mySStr = lcase(TRIM(searchEdit.GetDisplayCaption) )
-		for i = 0 to listGrid.GetTotalRowCount -1
-			if Instr(lcase(listGrid.GetCellString(i, 0, 1)), mySStr) > 0 or Instr(lcase(listGrid.GetCellString(i, 0, 2)), mySStr) > 0 then
-				listGrid.CurRow = i
-				exit for
-			end if
-		next
-	end sub
-	
-	sub setSearchEdit(myD)
-		useSearch = myD
-		searchEdit.visible myD
-	end sub
-	
-	sub showKeyCol(isShow)
-		call listGrid.SetColShow(0, 1, isShow)
-	end sub
-	
-	sub AddRow(mystr)
-		strRowData = mystr
-		call listGrid.InsertEmptyRow( listGrid.GetTotalRowCount, 1 , true , false )
-		call listGrid.RealUpdateRowData(strRowData , listGrid.GetTotalRowCount-1, 0 , 2 , false)
-		call setStatusEdit()
-	end sub
-	
-	sub AddRowWithForeOrBackColor(mystr, ForeOrBack, ColorIndex)
-		call AddRow(mystr)
-		for lCol = 0 to listGrid.GetColCount -1
-			call listGrid.SetCellIndexColor(listGrid.GetTotalRowCount - 1, 0, lCol , ForeOrBack , ColorIndex )
-		next
-		call setStatusEdit()
-	end sub
-	
-	sub allCheck()
-		myCheck = "0"
-		if listGrid.GetCellString(0, 0, 0) = "1" then
-			myCheck = "1"
-		end if
-		for i = 0 to listGrid.GetTotalRowCount -1
-			call listGrid.SetCellString(i, 0, 0, myCheck)
-		next
-	end sub
-
-	sub OnLClicked(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
-		if (lCol = 0 and bUpDn = true) or (lCol > 0 and bUpDn = false) then 
-			call listGrid_OnLClicked2(lRow , lSubRow , lCol)
-		end if
-	end sub
-
-	sub OnLClicked2(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
-		call OnLClicked(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
-	end sub
-
-
-	sub setStatusEdit()
-		mySelList = split(replace(replace(GetCheckColList(true,0),"all@",""), "ALL@",""),"@")
-		mySel = ubound(mySelList)+1
-		myTot = listGrid.GetTotalRowCount-1
-		if myTot = -1 then
-			statusEdit.caption = ""
-		else
-			mystr = mySel&"/"&myTot
-
-			if mySel = myTot then ' all check
-				mystr = mystr&",all ÀüÃ¼¼±ÅÃ"	
-			else
-				for each myAddStr in mySelList
-					mystr = mystr&","&myAddStr
-					if statusEdit.width <= len(mystr)*8 then
-						mystr = mystr&"+"
-						exit for
-					end if
-				next
-			end if
-			statusEdit.caption = mystr
-		end if
-	end sub
-	
-	sub listGrid_OnLClicked2(lRow , lSubRow , lCol)
-		if lCol > 0 then
-			setval = "0"
-			if listGrid.GetCellString(lRow, 0, 0) = "0" then
-				setval = "1"
-			end if
-			call listGrid.SetCellString(lRow, 0, 0, setval)
-		end if
-
-		' if all check ex
-		if lRow = 0 then
-			if lcase(listGrid.GetCellString(0, lSubRow , 1)) = "all" then
-				call allCheck()
-			end if 
-		else
-			if lcase(listGrid.GetCellString(0, lSubRow , 1)) = "all" then
-				call listGrid.SetCellString(0, 0, 0, "0")
-			end if 
-		end if
-		call setStatusEdit()
-	end sub 
-
-	function GetCellString(iRow , iCol)
-		GetCellString = listGrid.GetCellString(iRow, 0, iCol+1)
-	end function
-
-	function GetSelCheck(iIndex)
-		GetSelCheck = listGrid.GetCellString(iIndex, 0, 0)
-	end function
-
-	sub SetSelCheck(iIndex , bCheck)
-		if bCheck = true then
-			bCheck = "1"
-		else
-			bCheck = "0"
-		end if 	
-		call listGrid.SetCellString(iIndex, 0, 0, bCheck)
-		call setStatusEdit()
-	end sub
-
-	function GetCheckColList(bCheck, iIdx)
-		if bCheck = true then
-			bCheck = "1"
-		else
-			bCheck = "0"
-		end if
-		
-		set myarr = new MyArrayList
-		for lRow =0 to listGrid.GetTotalRowCount - 1
-			if listGrid.GetCellString(lRow, 0, 0) = bCheck then
-				myarr.add(listGrid.GetCellString(lRow, 0, iIdx+1))
-			end if
-		next
-		GetCheckColList = join(myarr.getArray(), "@")
-	end function
-
-	function GetCheckRowList(bCheck)
-		if bCheck = true then
-			bCheck = "1"
-		else
-			bCheck = "0"
-		end if
-		
-		set myarr = new MyArrayList
-		for lRow =0 to listGrid.GetTotalRowCount - 1
-			if listGrid.GetCellString(lRow, 0, 0) = bCheck then
-				myarr.add(lRow)
-			end if
-		next
-		GetCheckRowList = join(myarr.getArray(), "@")
-	end function
-
-	function GetTotalRow()
-		GetTotalRow = listGrid.GetTotalRowCount
-	end function
-
-	sub SetAllCheck(bCheck)
-		if bCheck = true then
-			myCheck = "1"
-		else
-			myCheck = "0"
-		end if
-
-		for i = 0 to listGrid.GetTotalRowCount -1
-			call listGrid.SetCellString(i, 0, 0, myCheck)
-		next
-	end sub
-end class
-'===================================================================
+''===============================================================
+'class MyCheckCombo
+'	private listGrid
+'	private ddButton
+'	private searchEdit
+'	private statusEdit
+'	private useSearch
+'	private dropDownST
+'	private dropDownSets
+'	private isEditA
+'	private isGridA
+'	private shTimer
+'	
+'	private sub Class_Initialize()
+'		isEditA = false
+'		isGridA = false
+'	end sub
+'
+'	Private Sub Class_Terminate()
+'	End Sub
+'
+'	public default function Init(plistGrid, pddButton, psearchEdit, pstatusEdit, pTimer)
+'		set listGrid = plistGrid
+'		set ddButton = pddButton
+'		set searchEdit = psearchEdit
+'		set statusEdit = pstatusEdit
+'		set shTimer = pTimer
+'		shTimer.Enabled = false
+'		shTimer.TimerGubun = 0
+'		shTimer.Interval = 300
+'		listGrid.DeleteAllRow 
+'		'default
+'		'call listGrid.InsertCol(listGrid.GetColCount, 2, 0) 
+'		call showKeyCol(true)
+'		useSearch = true
+'		dropdownST = true
+'		call deploy()
+'		call setSearchEditCaption("ï¿½ï¿½È­ï¿½ï¿½ ï¿½Ë»ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½")
+'		call setlistGridHeight(18)
+'		set Init = me
+'	end function
+'	
+'	property let Caption(ByVal mys) 
+'		call setStatusEdit()
+'	end property
 ' 
-class MyDialogWithCombo
-	private listCombo
-	private addButton
-	private strFileName
-	private strSection
-	private strKey
-	private strMapFile
-	private myREVAL
-	private m_isLoad
-	private isDropDown
-	private dataTp2
-	private myTitle
-	private myRegex
-
-	private sub Class_Initialize()
-		m_isLoad = "true"
-		strSection=""
-		myREVAL=""
-		isDropDown = false
-		myTitle=""
-		set myRegex = new RegExp
-	end sub
-
-	Private Sub Class_Terminate()
-		set myRegex = Nothing
-	End Sub
-
-	public default function Init(pArgArr)
-		for i = 0 to ubound(pArgArr)
-			ckArg = pArgArr(i)
-			if IsArray(ckArg) then 'object
-				dim tmpObj
-				set tmpObj = Nothing
-				for i1 = 0 to ubound(ckArg)
-					if ckArg(i1) = "combo=" then
-						i1 = i1+1
-						set listCombo=ckArg(i1)
-						set tmpObj = listCombo
-					elseif ckArg(i1) = "button=" then
-						i1 = i1+1
-						set addButton =ckArg(i1)
-						set tmpObj = addButton
-					elseif IsObject(ckArg(i1)) = false then
-						tarr = split(ckArg(i1), "=")
-						tkey = tarr(0)
-						tval = tarr(1)	
-						if tkey = "cap" then
-							tmpObj.Caption = tval
-							myTitle = tval
-						end if
-					end if
-				next
-			else
-				tarr = split(ckArg, "=")
-				tkey = tarr(0)
-				tval = tarr(1)
-				if tkey = "dataTp" then
-					strSection = tval
-				elseif tkey = "dataTp2" then
-					dataTp2 = tval
-				elseif tkey = "saveNm" then
-					strKey = tval
-				elseif tkey = "openDialog" then
-					strMapFile = tval
-					strFileName = replace(tval, ".map",".ini")
-				end if
-			end if
-		next
-
-
-		' not use if tree control
-		if Instr(strFileName , "tree") > 0 then
-			listCombo.visible = false
-		else
-			addButton.height = listCombo.height
-			addButton.width = 16
-			addButton.left = listCombo.left + listCombo.width-1
-			addButton.top = listCombo.top
-			addButton.UseImage = 411
-		end if
-
-		'default
-		if strSection = "" then
-			strSection = replace(strMapFile, ".map", "")
-		end if
-		set Init = me
-	end function
-
-
-	property let Caption(ByVal mys)
-		listCombo.Caption = mys
-	end property
-
-	public sub isLoad(bIsLoad)
-		m_isLoad = lcase(cstr(bIsLoad))
-	end sub
-
-	sub Enabled(b)
-		call addButton.Enabled(b)
-		call listCombo.Enabled(b)
-	end sub
-
-	sub loadNm(mynm)
-		loadKey = strKey
-		if mynm <> "" then
-			loadKey = mynm
-		end if
-
-		listCombo.ResetContent
-		myCdList = split(Form.GetConfigFileData(strFileName , strSection&"_cd", loadKey, ""), "|")
-		myNmList = split(Form.GetConfigFileData(strFileName , strSection&"_nm", loadKey, ""), "|")
-		'istart = -1
-			
-		'for i = 0 to ubound(myCdList) 
-		'	if lcase(myCdList(i)) = "all" and (instr(lcase(myNmList(i)), "all") > 0 or instr(myNmList(i), "ÀüÃ¼") > 0) then
-		'		'noop
-		'		if ubound(myCdList) = 0 then
-		'			exit for
-		'		end if
-		'	else
-		'		istart = i
-		'		exit for
-		'	end if
-		'next
-			
-		if ubound(myCdList) = -1 then 
-			'noop 
-			listCombo.Caption = myTitle
-			'listCombo.AddRow "all@ÀüÃ¼¼±ÅÃ"
-		else
-			listCombo.AddRow "all@ÀüÃ¼¼±ÅÃ"
-			'mytot = Form.GetConfigFileData(strFileName , strSection&"_total", loadKey, "")
-			for i = 0 to ubound(myCdList)
-				if i = 0 and lcase(myCdList(i)) = "all" and (instr(lcase(myNmList(i)), "all") > 0 or instr(myNmList(i), "ÀüÃ¼") > 0) then
-					'noop
-				else
-					listCombo.AddRow myCdList(i)&"@"&myNmList(i)
-				end if
-			next
-			'listCombo.SetAllCheck true
-			call setAllCkAndCap(listCombo, 0, true, false)
-		end if
-	end sub
-
-	public sub load()
-		call loadNm("")
-	end sub
-	
-	public sub listCombo_OnListCheckSelChanged(iIndex , bCheck)
-		call setAllCkAndCap(listCombo, iIndex , bCheck, false)
-	end sub
-	
-	sub OnListCheckSelChanged(iIndex , bCheck)
-		call listCombo_OnListCheckSelChanged(iIndex , bCheck)
-	end sub
-
-
-	public sub OnClick()
-		call addButton_OnClick()
-	end sub 
-	
-	public sub addButton_OnClick()
-		Form.SetLinkVar "MyDialogWithCombo_myTitle", myTitle
-		Form.SetLinkVar "dataTp2", dataTp2
-		Form.SetLinkVar strSection&"_load", m_isLoad
-		Form.SetLinkVar "strStdNm", strSection
-		Form.SetLinkVar strSection&"_strKey", strKey
-		Form.OpenDialog strMapFile , ""
-		myREVAL = Form.GetLinkVar(strSection&"_reval", true)
-		'renew
-		call load()
-	end sub
-	
-	public function getSels()
-		getSels = myREVAL
-	end function
-
-	public function getSelCk()
-		getSelCk = listCombo.GetCheckColList(true, 0)
-	end function
-
-	public function GetCheckColList(bCheck, iIdx)
-		mystr = listCombo.GetCheckColList(bCheck, iIdx)
-		myRegex.pattern = "^(all|ALL|ÀüÃ¼|ÀüÃ¼¼±ÅÃ)@"
-		mystr = myRegex.replace(mystr, "")
-		GetCheckColList = mystr
-	end function
-
-	sub myLoadNm(mynm)
-		call loadNm(mynm)
-	end sub
-
-	sub myLoadDef()
-		call myLoadNm("")
-	end sub
-
-	sub mySaveDef()
-		call mySaveNm("")
-	end sub
-
-	sub mySaveNm(mynm)
-		if mynm = "" then
-			mynm = strKey
-		end if
-
-	'	set tmparr_key = new MyArrayList
-	'	set tmparr_cap = new MyArrayList
-	'	call tmparr_key.setArray(split(GetCheckColList(true, 0), "@"))
-	'	call tmparr_cap.setArray(split(GetCheckColList(true, 1), "@"))
-
-
-		myKeyListStr = replace( GetCheckColList(true, 0),"@", "|")
-		myCapListStr = replace( GetCheckColList(true, 1),"@", "|")
-
-	'	myCapListStr = tmparr_cap.sjoin("|")
-	'	myKeyListStr = tmparr_key.sjoin("|")
-
-	'	istart = -1
-	'	if tmparr_key.size() > 0 then
-	'		for i = 0 to tmparr_key.size() - 1
-	'			if lcase(tmparr_key.getit(i)) = "all" and (instr(lcase(tmparr_cap.getit(i)), "all") > 0 or instr(tmparr_cap.getit(i),"ÀüÃ¼") > 0) then
-	'				'noop
-	'				if tmparr_key.size() = 1 then
-	'					exit for
-	'				end if
-	'			else
-	'				istart = i
-	'				exit for
-	'			end if
-	'		next
-	'		if istart > -1 then
-	'			myCapListStr = join(tmparr_cap.slice(istart, tmparr_cap.size()-1), "|")
-	'			myKeyListStr = join(tmparr_key.slice(istart, tmparr_key.size()-1), "|")
-	'		else
-	'			myCapListStr = ""
-	'			myKeyListStr = ""
-	'		end if
-	'	end if
-		call Form.WriteConfigFileData(strFileName, strSection&"_cd", mynm, myKeyListStr)
-		call Form.WriteConfigFileData(strFileName, strSection&"_nm", mynm, myCapListStr)
-		call Form.WriteConfigFileData(strFileName, strSection&"_total", mynm, ubound(split(myCapListStr, "|"))+1)
-		'set tmparr_key = Nothing
-		'set tmparr_cap = Nothing
-	end sub
-
-	sub saveKeyAndCap(myKeyListStr, myCapListStr)
-		call Form.WriteConfigFileData(strFileName, strSection&"_cd", strKey, replace(myKeyListStr, "@","|"))
-		call Form.WriteConfigFileData(strFileName, strSection&"_nm", strKey, replace(myCapListStr, "@","|"))
-		call Form.WriteConfigFileData(strFileName, strSection&"_total", strKey, ubound(split(myCapListStr, "@"))+1)
-	end sub
-
-	sub saveNm(mySection, myKey, myCapListStr, myKeyListStr)
-		call Form.WriteConfigFileData(strFileName, mySection&"_cd", myKey, replace(myKeyListStr, "@","|"))
-		call Form.WriteConfigFileData(strFileName, mySection&"_nm", myKey, replace(myCapListStr, "@","|"))
-		call Form.WriteConfigFileData(strFileName, mySection&"_total", myKey, ubound(split(myCapListStr, "@"))+1)
-	end sub
-
-	sub SetAllCheck(bCheck)
-		call listCombo.SetAllCheck(bCheck)
-	end sub
-
-	function GetTotalRow()
-		GetTotalRow = listCombo.GetTotalRow()
-	end function
-
-	function GetCellString(iRow, iCol)
-		GetCellString = listCombo.GetCellString(iRow,iCol)
-	end function
-
-	sub SetSelCheck(iIndex , bCheck)
-		call listCombo.SetSelCheck(iIndex , bCheck )
-	end sub
-
-	function GetSelCheck(iIndex)
-		GetSelCheck = listCombo.GetSelCheck(iIndex)
-	end function
-end class
-'=====================================================
-function ifnull(mysrc, mysub)
-	if len(mysrc) = 0 then
-		ifnull = mysub
-	else
-		ifnull = mysrc
-	end if
-end function
-'===================================================
-sub openweb(myurl, mycorrdinate)
-	if mycoordinate = "" then
-		mycoordinate = array(30,200,1220,500) 'xpos, ypos, width, height
-	end if
-	Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS="&mycoordindate(0)&" /YPOS="&mycoordinate(1)&" /WIDTH="&mycoordinate(2)&" /HEIGHT="&mycoordinate(3)&" /URL="&myUrl
-	Form.OpenScreen "9988"
-end sub
-'===================================================
-sub SetCheckColList(myCombo, iCol, keystr)
-	myKeyList = split(keystr, "@")
-	i = 0
-	for each mykey in myKeyList
-		if i = 0 then 
-			if lcase(mykey) = "all" or instr(mykey, "ÀüÃ¼") > 0 then
-				call ckAll(myCombo, 0, true)
-				exit for
-			end if
-		end if
-
-		iRow = CInt(myCombo.GetIndexByColCaption(iCol, mykey))
-		if iRow > -1 then
-			call ckAll(myCombo, iRow, true)
-		end if
-		i = i + 1
-	next
-end sub
-'===================================================
-sub SetCheck2Opt(ck1, opt1, ck2, opt2, setstr)
-	myarr = split(setstr, "@")
-	'0 ck1, 1 opt1, 2 ck2, 3 opt2
-	if myarr(0) = "0" then
-		ck1.SetCheck "0"
-		opt1.Enabled false
-		ck2.SetCheck "0"
-		opt2.Enabled false
-	else
-		ck1.SetCheck "1"
-		opt1.Enabled true
-		opt1.Caption myarr(1)
-		ck2.Enabled true
-		if myarr(2) = "0" then
-			ck2.SetCheck "0"
-			opt2.Enabled false
-		else
-			ck2.SetCheck "1"
-			opt2.Enabled true
-			opt2.Caption myarr(3)
-		end if
-	end if
-end sub
-'===================================================
-function num2def(numStr, chStr, dec)
-	reval = ""
-	if numStr = "" or Instr(numStr, chStr) > 0 then
-		reval = ""	
-	else
-		reval = formatNumber(numStr,dec)
-	end if
-	num2def = reval
-end function
+'	sub Enabled(b)
+'		call ddButton.Enabled(b)
+'		call statusEdit.Enabled(b)
+'	end sub
+'
+'	sub OnSetFocus(myo)
+'		if Instr(lcase(typename(myo)), "grid") > 0 then
+'			isGridA = true
+'		else
+'			isEditA = true
+'		end if
+'		shTimer.Enabled true
+'	end sub
+'
+'	sub OnKillFocus(myo)
+'		if Instr(lcase(typename(myo)), "grid") > 0 then
+'			isGridA = false
+'		else
+'			isEditA = false
+'		end if
+'		shTimer.Enabled true
+'	end sub
+'
+'	sub Timer()
+'		shTimer.Enabled false
+'		call myVisible()
+'	end sub
+'	
+'	sub myVisible()
+'		if isGridA = false and isEditA = false then
+'			searchEdit.Visible false
+'			listGrid.Visible false
+'			call ddButtonST(true)
+'		end if	
+'	end sub
+'
+'	sub setSearchEditCaption(myCap)
+'		searchEdit.caption = myCap
+'	end sub
+'	
+'	sub setlistGridHeight(myH)
+'		if Form.GetScreenHeight( ) <= myH * 18 + listGrid.top then
+'			tmpH = myH
+'			for resize = 1 to myH
+'				tmpH = myH - resize
+'				if Form.GetScreenHeight( ) > tmpH * 18 + listGrid.top then
+'					exit for
+'				end if
+'			next
+'			myH = tmpH
+'		end if
+'		listGrid.Height = myH * 18
+'	end sub
+'	
+'	sub deploy()
+'		ddButton.top = statusEdit.top
+'		ddButton.left = statusEdit.left + statusEdit.width - 1
+'		ddButton.height = statusEdit.height
+'		ddButton.width = 16
+'		ddButton.caption = "ï¿½ï¿½"
+'
+'		searchEdit.left = statusEdit.left
+'		listGrid.left = statusEdit.left
+'		searchEdit.width = statusEdit.width + ddButton.width
+'		listGrid.width = searchEdit.width
+'		listGrid.SetColWidth 0 , 15
+'		if useSearch = true then
+'			dropDownSets = array(searchEdit, listGrid)
+'			searchEdit.top = statusEdit.top + statusEdit.height
+'			listGrid.top = statusEdit.top + statusEdit.height + searchEdit.Height
+'		else
+'			dropDownSets = array(listGrid)
+'			listGrid.top = statusEdit.top + statusEdit.height
+'		end if	
+'		
+'		set myColor =  new MyIdxColor
+'		searchEdit.ForeColor myColor.getIdxRGB(13)
+'		searchEdit.BackColor myColor.getIdxRGB(101)
+'		call setSearchEdit(useSearch)
+'		call ddButton_OnClick()
+'	end sub
+'
+'	sub ddButtonST(myst)
+'		if myst = true then
+'			dropDownST = false
+'			isEditA = false
+'			isGridA = false
+'			ddButton.caption = "ï¿½ï¿½"
+'		else
+'			dropDownST = true
+'			isEditA = false
+'			isGridA = true
+'			ddButton.caption = "ï¿½ï¿½"
+'		end if
+'	end sub
+'	
+'	sub OnClick()
+'		call ddButton_OnClick()
+'	end sub
+'	sub ddButton_OnClick()
+'		call ddButtonST(dropDownST)
+'		for each myobj in dropDownSets
+'			myobj.visible dropDownST
+'		next
+'		listGrid.SetFocusGrid 
+'	end sub
+'
+'	sub OnChange()
+'		call searchEdit_OnChange()
+'	end sub
+'
+'	sub searchEdit_OnChange()
+'		set myColor =  new MyIdxColor
+'		searchEdit.ForeColor myColor.getIdxRGB(1)
+'		mySStr = lcase(TRIM(searchEdit.GetDisplayCaption) )
+'		for i = 0 to listGrid.GetTotalRowCount -1
+'			if Instr(lcase(listGrid.GetCellString(i, 0, 1)), mySStr) > 0 or Instr(lcase(listGrid.GetCellString(i, 0, 2)), mySStr) > 0 then
+'				listGrid.CurRow = i
+'				exit for
+'			end if
+'		next
+'	end sub
+'	
+'	sub setSearchEdit(myD)
+'		useSearch = myD
+'		searchEdit.visible myD
+'	end sub
+'	
+'	sub showKeyCol(isShow)
+'		call listGrid.SetColShow(0, 1, isShow)
+'	end sub
+'	
+'	sub AddRow(mystr)
+'		strRowData = mystr
+'		call listGrid.InsertEmptyRow(listGrid.GetTotalRowCount, 1 , true , false )
+'		call listGrid.RealUpdateRowData(strRowData , listGrid.GetTotalRowCount-1, 1 , 2 , false)
+'		call setStatusEdit()
+'	end sub
+'	
+'	sub AddRowWithForeOrBackColor(mystr, pForeOrBack, ColorIndex)
+'		call AddRow(mystr)
+'		
+'		ForeOrBack = 0
+'		if pForeOrBack = "F" or CStr(pForeOrBack) = "1" then
+'			ForeOrBack = 1
+'		end if
+'
+'		for lCol = 0 to listGrid.GetColCount -1
+'			call listGrid.SetCellIndexColor(listGrid.GetTotalRowCount - 1, 0, lCol , ForeOrBack , ColorIndex )
+'		next
+'		call setStatusEdit()
+'	end sub
+'
+'	function GetIndexByColCaption(iCol, mykey)
+'		i = -1
+'		for lRow = 0 to listGrid.GetTotalRowCount - 1
+'			if listGrid.GetCellString(lRow, 0, iCol+1) = mykey then
+'				i = lRow
+'				exit for
+'			end if
+'		next
+'		GetIndexByColCaption = i
+'	end function
+'	
+'	sub allCheck()
+'		myCheck = "0"
+'		if listGrid.GetCellString(0, 0, 0) = "1" then
+'			myCheck = "1"
+'		end if
+'		for i = 0 to listGrid.GetTotalRowCount -1
+'			call listGrid.SetCellString(i, 0, 0, myCheck)
+'		next
+'	end sub
+'
+'	sub OnLClicked(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
+'		if (lCol = 0 and bUpDn = true) or (lCol > 0 and bUpDn = false) then 
+'			call listGrid_OnLClicked2(lRow , lSubRow , lCol)
+'		end if
+'	end sub
+'
+'	sub OnLClicked2(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
+'		call OnLClicked(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
+'	end sub
+'
+'
+'	sub setStatusEdit()
+'		mySelList = split(replace(replace(GetCheckColList(true,0),"all@",""), "ALL@",""),"@")
+'		mySel = ubound(mySelList)+1
+'		myTot = listGrid.GetTotalRowCount-1
+'		if myTot = -1 then
+'			statusEdit.caption = ""
+'		else
+'			mystr = mySel&"/"&myTot
+'
+'			if mySel = myTot then ' all check
+'				mystr = mystr&",all ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½"	
+'			else
+'				for each myAddStr in mySelList
+'					mystr = mystr&","&myAddStr
+'					if statusEdit.width <= len(mystr)*8 then
+'						mystr = mystr&"+"
+'						exit for
+'					end if
+'				next
+'			end if
+'			statusEdit.caption = mystr
+'		end if
+'	end sub
+'	
+'	sub listGrid_OnLClicked2(lRow , lSubRow , lCol)
+'		if lCol > 0 then
+'			setval = "0"
+'			if listGrid.GetCellString(lRow, 0, 0) = "0" then
+'				setval = "1"
+'			end if
+'			call listGrid.SetCellString(lRow, 0, 0, setval)
+'		end if
+'
+'		' if all check ex
+'		if lRow = 0 then
+'			if lcase(listGrid.GetCellString(0, lSubRow , 1)) = "all" then
+'				call allCheck()
+'			end if 
+'		else
+'			if lcase(listGrid.GetCellString(0, lSubRow , 1)) = "all" then
+'				call listGrid.SetCellString(0, 0, 0, "0")
+'			end if 
+'		end if
+'		call setStatusEdit()
+'	end sub 
+'
+'	function GetCellString(iRow , iCol)
+'		GetCellString = listGrid.GetCellString(iRow, 0, iCol+1)
+'	end function
+'
+'	function GetSelCheck(iIndex)
+'		GetSelCheck = listGrid.GetCellString(iIndex, 0, 0)
+'	end function
+'
+'	sub SetSelCheck(iIndex , bCheck)
+'		if bCheck = true then
+'			bCheck = "1"
+'		else
+'			bCheck = "0"
+'		end if 	
+'		call listGrid.SetCellString(iIndex, 0, 0, bCheck)
+'		call setStatusEdit()
+'	end sub
+'
+'	function GetCheckColList(bCheck, iIdx)
+'		if bCheck = true then
+'			bCheck = "1"
+'		else
+'			bCheck = "0"
+'		end if
+'		
+'		set myarr = new MyArrayList
+'		for lRow =0 to listGrid.GetTotalRowCount - 1
+'			if listGrid.GetCellString(lRow, 0, 0) = bCheck then
+'				myarr.add(listGrid.GetCellString(lRow, 0, iIdx+1))
+'			end if
+'		next
+'		GetCheckColList = join(myarr.getArray(), "@")
+'	end function
+'
+'	function GetCheckRowList(bCheck)
+'		if bCheck = true then
+'			bCheck = "1"
+'		else
+'			bCheck = "0"
+'		end if
+'		
+'		set myarr = new MyArrayList
+'		for lRow =0 to listGrid.GetTotalRowCount - 1
+'			if listGrid.GetCellString(lRow, 0, 0) = bCheck then
+'				myarr.add(lRow)
+'			end if
+'		next
+'		GetCheckRowList = join(myarr.getArray(), "@")
+'	end function
+'
+'	function GetTotalRow()
+'		GetTotalRow = listGrid.GetTotalRowCount
+'	end function
+'
+'	sub SetAllCheck(bCheck)
+'		if bCheck = true then
+'			myCheck = "1"
+'		else
+'			myCheck = "0"
+'		end if
+'
+'		for i = 0 to listGrid.GetTotalRowCount -1
+'			call listGrid.SetCellString(i, 0, 0, myCheck)
+'		next
+'	end sub
+'end class
+''===============================================================
+'class MyGridAsCheckCombo
+'	private listGrid
+'	private ddButton
+'	private searchEdit
+'	private statusEdit
+'	private useSearch
+'	private dropDownST
+'	private dropDownSets
+'	private isEditA
+'	private isGridA
+'	private shTimer
+'	
+'	private sub Class_Initialize()
+'		isEditA = false
+'		isGridA = false
+'	end sub
+'
+'	Private Sub Class_Terminate()
+'	End Sub
+'
+'	public default function Init(plistGrid, pddButton, psearchEdit, pstatusEdit, pTimer)
+'		set listGrid = plistGrid
+'		set ddButton = pddButton
+'		set searchEdit = psearchEdit
+'		set statusEdit = pstatusEdit
+'		set shTimer = pTimer
+'		shTimer.Enabled = false
+'		shTimer.TimerGubun = 0
+'		shTimer.Interval = 300
+'		listGrid.DeleteAllRow 
+'		'default
+'		'call listGrid.InsertCol(listGrid.GetColCount, 2, 0) 
+'		call showKeyCol(true)
+'		useSearch = true
+'		dropdownST = true
+'		call deploy()
+'		call setSearchEditCaption("ï¿½ï¿½È­ï¿½ï¿½ ï¿½Ë»ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½")
+'		call setlistGridHeight(18)
+'		set Init = me
+'	end function
+'	
+'	property let Caption(ByVal mys) 
+'		call setStatusEdit()
+'	end property
+' 
+'	sub Enabled(b)
+'		call ddButton.Enabled(b)
+'		call statusEdit.Enabled(b)
+'	end sub
+'
+'	sub OnSetFocus(myo)
+'		if Instr(lcase(typename(myo)), "grid") > 0 then
+'			isGridA = true
+'		else
+'			isEditA = true
+'		end if
+'		shTimer.Enabled true
+'	end sub
+'
+'	sub OnKillFocus(myo)
+'		if Instr(lcase(typename(myo)), "grid") > 0 then
+'			isGridA = false
+'		else
+'			isEditA = false
+'		end if
+'		shTimer.Enabled true
+'	end sub
+'
+'	sub Timer()
+'		shTimer.Enabled false
+'		call myVisible()
+'	end sub
+'	
+'	sub myVisible()
+'		if isGridA = false and isEditA = false then
+'			searchEdit.Visible false
+'			listGrid.Visible false
+'			call ddButtonST(true)
+'		end if	
+'	end sub
+'
+'	sub setSearchEditCaption(myCap)
+'		searchEdit.caption = myCap
+'	end sub
+'	
+'	sub setlistGridHeight(myH)
+'		if Form.GetScreenHeight( ) <= myH * 18 + listGrid.top then
+'			tmpH = myH
+'			for resize = 1 to myH
+'				tmpH = myH - resize
+'				if Form.GetScreenHeight( ) > tmpH * 18 + listGrid.top then
+'					exit for
+'				end if
+'			next
+'			myH = tmpH
+'		end if
+'		listGrid.Height = myH * 18
+'	end sub
+'	
+'	sub deploy()
+'		ddButton.top = statusEdit.top
+'		ddButton.left = statusEdit.left + statusEdit.width - 1
+'		ddButton.height = statusEdit.height
+'		ddButton.width = 16
+'		ddButton.caption = "ï¿½ï¿½"
+'
+'		searchEdit.left = statusEdit.left
+'		listGrid.left = statusEdit.left
+'		searchEdit.width = statusEdit.width + ddButton.width
+'		listGrid.width = searchEdit.width
+'		listGrid.SetColWidth 0 , 15
+'		if useSearch = true then
+'			dropDownSets = array(searchEdit, listGrid)
+'			searchEdit.top = statusEdit.top + statusEdit.height
+'			listGrid.top = statusEdit.top + statusEdit.height + searchEdit.Height
+'		else
+'			dropDownSets = array(listGrid)
+'			listGrid.top = statusEdit.top + statusEdit.height
+'		end if	
+'		
+'		set myColor =  new MyIdxColor
+'		searchEdit.ForeColor myColor.getIdxRGB(13)
+'		searchEdit.BackColor myColor.getIdxRGB(101)
+'		call setSearchEdit(useSearch)
+'		call ddButton_OnClick()
+'	end sub
+'
+'	sub ddButtonST(myst)
+'		if myst = true then
+'			dropDownST = false
+'			isEditA = false
+'			isGridA = false
+'			ddButton.caption = "ï¿½ï¿½"
+'		else
+'			dropDownST = true
+'			isEditA = false
+'			isGridA = true
+'			ddButton.caption = "ï¿½ï¿½"
+'		end if
+'	end sub
+'	
+'	sub OnClick()
+'		call ddButton_OnClick()
+'	end sub
+'	sub ddButton_OnClick()
+'		call ddButtonST(dropDownST)
+'		for each myobj in dropDownSets
+'			myobj.visible dropDownST
+'		next
+'		listGrid.SetFocusGrid 
+'	end sub
+'
+'	sub OnChange()
+'		call searchEdit_OnChange()
+'	end sub
+'
+'	sub searchEdit_OnChange()
+'		set myColor =  new MyIdxColor
+'		searchEdit.ForeColor myColor.getIdxRGB(1)
+'		mySStr = lcase(TRIM(searchEdit.GetDisplayCaption) )
+'		for i = 0 to listGrid.GetTotalRowCount -1
+'			if Instr(lcase(listGrid.GetCellString(i, 0, 1)), mySStr) > 0 or Instr(lcase(listGrid.GetCellString(i, 0, 2)), mySStr) > 0 then
+'				listGrid.CurRow = i
+'				exit for
+'			end if
+'		next
+'	end sub
+'	
+'	sub setSearchEdit(myD)
+'		useSearch = myD
+'		searchEdit.visible myD
+'	end sub
+'	
+'	sub showKeyCol(isShow)
+'		call listGrid.SetColShow(0, 1, isShow)
+'	end sub
+'	
+'	sub AddRow(mystr)
+'		strRowData = mystr
+'		call listGrid.InsertEmptyRow( listGrid.GetTotalRowCount, 1 , true , false )
+'		call listGrid.RealUpdateRowData(strRowData , listGrid.GetTotalRowCount-1, 0 , 2 , false)
+'		call setStatusEdit()
+'	end sub
+'	
+'	sub AddRowWithForeOrBackColor(mystr, ForeOrBack, ColorIndex)
+'		call AddRow(mystr)
+'		for lCol = 0 to listGrid.GetColCount -1
+'			call listGrid.SetCellIndexColor(listGrid.GetTotalRowCount - 1, 0, lCol , ForeOrBack , ColorIndex )
+'		next
+'		call setStatusEdit()
+'	end sub
+'	
+'	sub allCheck()
+'		myCheck = "0"
+'		if listGrid.GetCellString(0, 0, 0) = "1" then
+'			myCheck = "1"
+'		end if
+'		for i = 0 to listGrid.GetTotalRowCount -1
+'			call listGrid.SetCellString(i, 0, 0, myCheck)
+'		next
+'	end sub
+'
+'	sub OnLClicked(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
+'		if (lCol = 0 and bUpDn = true) or (lCol > 0 and bUpDn = false) then 
+'			call listGrid_OnLClicked2(lRow , lSubRow , lCol)
+'		end if
+'	end sub
+'
+'	sub OnLClicked2(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
+'		call OnLClicked(lRow , lSubRow , lCol , bUpDn , pvarProcessed)
+'	end sub
+'
+'
+'	sub setStatusEdit()
+'		mySelList = split(replace(replace(GetCheckColList(true,0),"all@",""), "ALL@",""),"@")
+'		mySel = ubound(mySelList)+1
+'		myTot = listGrid.GetTotalRowCount-1
+'		if myTot = -1 then
+'			statusEdit.caption = ""
+'		else
+'			mystr = mySel&"/"&myTot
+'
+'			if mySel = myTot then ' all check
+'				mystr = mystr&",all ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½"	
+'			else
+'				for each myAddStr in mySelList
+'					mystr = mystr&","&myAddStr
+'					if statusEdit.width <= len(mystr)*8 then
+'						mystr = mystr&"+"
+'						exit for
+'					end if
+'				next
+'			end if
+'			statusEdit.caption = mystr
+'		end if
+'	end sub
+'	
+'	sub listGrid_OnLClicked2(lRow , lSubRow , lCol)
+'		if lCol > 0 then
+'			setval = "0"
+'			if listGrid.GetCellString(lRow, 0, 0) = "0" then
+'				setval = "1"
+'			end if
+'			call listGrid.SetCellString(lRow, 0, 0, setval)
+'		end if
+'
+'		' if all check ex
+'		if lRow = 0 then
+'			if lcase(listGrid.GetCellString(0, lSubRow , 1)) = "all" then
+'				call allCheck()
+'			end if 
+'		else
+'			if lcase(listGrid.GetCellString(0, lSubRow , 1)) = "all" then
+'				call listGrid.SetCellString(0, 0, 0, "0")
+'			end if 
+'		end if
+'		call setStatusEdit()
+'	end sub 
+'
+'	function GetCellString(iRow , iCol)
+'		GetCellString = listGrid.GetCellString(iRow, 0, iCol+1)
+'	end function
+'
+'	function GetSelCheck(iIndex)
+'		GetSelCheck = listGrid.GetCellString(iIndex, 0, 0)
+'	end function
+'
+'	sub SetSelCheck(iIndex , bCheck)
+'		if bCheck = true then
+'			bCheck = "1"
+'		else
+'			bCheck = "0"
+'		end if 	
+'		call listGrid.SetCellString(iIndex, 0, 0, bCheck)
+'		call setStatusEdit()
+'	end sub
+'
+'	function GetCheckColList(bCheck, iIdx)
+'		if bCheck = true then
+'			bCheck = "1"
+'		else
+'			bCheck = "0"
+'		end if
+'		
+'		set myarr = new MyArrayList
+'		for lRow =0 to listGrid.GetTotalRowCount - 1
+'			if listGrid.GetCellString(lRow, 0, 0) = bCheck then
+'				myarr.add(listGrid.GetCellString(lRow, 0, iIdx+1))
+'			end if
+'		next
+'		GetCheckColList = join(myarr.getArray(), "@")
+'	end function
+'
+'	function GetCheckRowList(bCheck)
+'		if bCheck = true then
+'			bCheck = "1"
+'		else
+'			bCheck = "0"
+'		end if
+'		
+'		set myarr = new MyArrayList
+'		for lRow =0 to listGrid.GetTotalRowCount - 1
+'			if listGrid.GetCellString(lRow, 0, 0) = bCheck then
+'				myarr.add(lRow)
+'			end if
+'		next
+'		GetCheckRowList = join(myarr.getArray(), "@")
+'	end function
+'
+'	function GetTotalRow()
+'		GetTotalRow = listGrid.GetTotalRowCount
+'	end function
+'
+'	sub SetAllCheck(bCheck)
+'		if bCheck = true then
+'			myCheck = "1"
+'		else
+'			myCheck = "0"
+'		end if
+'
+'		for i = 0 to listGrid.GetTotalRowCount -1
+'			call listGrid.SetCellString(i, 0, 0, myCheck)
+'		next
+'	end sub
+'end class
+''===================================================================
+'' 
+'class MyDialogWithCombo
+'	private listCombo
+'	private addButton
+'	private strFileName
+'	private strSection
+'	private strKey
+'	private strMapFile
+'	private myREVAL
+'	private m_isLoad
+'	private isDropDown
+'	private dataTp2
+'	private myTitle
+'	private myRegex
+'
+'	private sub Class_Initialize()
+'		m_isLoad = "true"
+'		strSection=""
+'		myREVAL=""
+'		isDropDown = false
+'		myTitle=""
+'		set myRegex = new RegExp
+'	end sub
+'
+'	Private Sub Class_Terminate()
+'		set myRegex = Nothing
+'	End Sub
+'
+'	public default function Init(pArgArr)
+'		for i = 0 to ubound(pArgArr)
+'			ckArg = pArgArr(i)
+'			if IsArray(ckArg) then 'object
+'				dim tmpObj
+'				set tmpObj = Nothing
+'				for i1 = 0 to ubound(ckArg)
+'					if ckArg(i1) = "combo=" then
+'						i1 = i1+1
+'						set listCombo=ckArg(i1)
+'						set tmpObj = listCombo
+'					elseif ckArg(i1) = "button=" then
+'						i1 = i1+1
+'						set addButton =ckArg(i1)
+'						set tmpObj = addButton
+'					elseif IsObject(ckArg(i1)) = false then
+'						tarr = split(ckArg(i1), "=")
+'						tkey = tarr(0)
+'						tval = tarr(1)	
+'						if tkey = "cap" then
+'							tmpObj.Caption = tval
+'							myTitle = tval
+'						end if
+'					end if
+'				next
+'			else
+'				tarr = split(ckArg, "=")
+'				tkey = tarr(0)
+'				tval = tarr(1)
+'				if tkey = "dataTp" then
+'					strSection = tval
+'				elseif tkey = "dataTp2" then
+'					dataTp2 = tval
+'				elseif tkey = "saveNm" then
+'					strKey = tval
+'				elseif tkey = "openDialog" then
+'					strMapFile = tval
+'					strFileName = replace(tval, ".map",".ini")
+'				end if
+'			end if
+'		next
+'
+'
+'		' not use if tree control
+'		if Instr(strFileName , "tree") > 0 then
+'			listCombo.visible = false
+'		else
+'			addButton.height = listCombo.height
+'			addButton.width = 16
+'			addButton.left = listCombo.left + listCombo.width-1
+'			addButton.top = listCombo.top
+'			addButton.UseImage = 411
+'		end if
+'
+'		'default
+'		if strSection = "" then
+'			strSection = replace(strMapFile, ".map", "")
+'		end if
+'		set Init = me
+'	end function
+'
+'
+'	property let Caption(ByVal mys)
+'		listCombo.Caption = mys
+'	end property
+'
+'	public sub isLoad(bIsLoad)
+'		m_isLoad = lcase(cstr(bIsLoad))
+'	end sub
+'
+'	sub Enabled(b)
+'		call addButton.Enabled(b)
+'		call listCombo.Enabled(b)
+'	end sub
+'
+'	sub loadNm(mynm)
+'		loadKey = strKey
+'		if mynm <> "" then
+'			loadKey = mynm
+'		end if
+'
+'		listCombo.ResetContent
+'		myCdList = split(Form.GetConfigFileData(strFileName , strSection&"_cd", loadKey, ""), "|")
+'		myNmList = split(Form.GetConfigFileData(strFileName , strSection&"_nm", loadKey, ""), "|")
+'		'istart = -1
+'			
+'		'for i = 0 to ubound(myCdList) 
+'		'	if lcase(myCdList(i)) = "all" and (instr(lcase(myNmList(i)), "all") > 0 or instr(myNmList(i), "ï¿½ï¿½Ã¼") > 0) then
+'		'		'noop
+'		'		if ubound(myCdList) = 0 then
+'		'			exit for
+'		'		end if
+'		'	else
+'		'		istart = i
+'		'		exit for
+'		'	end if
+'		'next
+'			
+'		if ubound(myCdList) = -1 then 
+'			'noop 
+'			listCombo.Caption = myTitle
+'			'listCombo.AddRow "all@ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½"
+'		else
+'			listCombo.AddRow "all@ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½"
+'			'mytot = Form.GetConfigFileData(strFileName , strSection&"_total", loadKey, "")
+'			for i = 0 to ubound(myCdList)
+'				if i = 0 and lcase(myCdList(i)) = "all" and (instr(lcase(myNmList(i)), "all") > 0 or instr(myNmList(i), "ï¿½ï¿½Ã¼") > 0) then
+'					'noop
+'				else
+'					listCombo.AddRow myCdList(i)&"@"&myNmList(i)
+'				end if
+'			next
+'			'listCombo.SetAllCheck true
+'			call setAllCkAndCap(listCombo, 0, true, false)
+'		end if
+'	end sub
+'
+'	public sub load()
+'		call loadNm("")
+'	end sub
+'	
+'	public sub listCombo_OnListCheckSelChanged(iIndex , bCheck)
+'		call setAllCkAndCap(listCombo, iIndex , bCheck, false)
+'	end sub
+'	
+'	sub OnListCheckSelChanged(iIndex , bCheck)
+'		call listCombo_OnListCheckSelChanged(iIndex , bCheck)
+'	end sub
+'
+'
+'	public sub OnClick()
+'		call addButton_OnClick()
+'	end sub 
+'	
+'	public sub addButton_OnClick()
+'		Form.SetLinkVar "MyDialogWithCombo_myTitle", myTitle
+'		Form.SetLinkVar "dataTp2", dataTp2
+'		Form.SetLinkVar strSection&"_load", m_isLoad
+'		Form.SetLinkVar "strStdNm", strSection
+'		Form.SetLinkVar strSection&"_strKey", strKey
+'		Form.OpenDialog strMapFile , ""
+'		myREVAL = Form.GetLinkVar(strSection&"_reval", true)
+'		'renew
+'		call load()
+'	end sub
+'	
+'	public function getSels()
+'		getSels = myREVAL
+'	end function
+'
+'	public function getSelCk()
+'		getSelCk = listCombo.GetCheckColList(true, 0)
+'	end function
+'
+'	public function GetCheckColList(bCheck, iIdx)
+'		mystr = listCombo.GetCheckColList(bCheck, iIdx)
+'		myRegex.pattern = "^(all|ALL|ï¿½ï¿½Ã¼|ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½)@"
+'		mystr = myRegex.replace(mystr, "")
+'		GetCheckColList = mystr
+'	end function
+'
+'	sub myLoadNm(mynm)
+'		call loadNm(mynm)
+'	end sub
+'
+'	sub myLoadDef()
+'		call myLoadNm("")
+'	end sub
+'
+'	sub mySaveDef()
+'		call mySaveNm("")
+'	end sub
+'
+'	sub mySaveNm(mynm)
+'		if mynm = "" then
+'			mynm = strKey
+'		end if
+'
+'	'	set tmparr_key = new MyArrayList
+'	'	set tmparr_cap = new MyArrayList
+'	'	call tmparr_key.setArray(split(GetCheckColList(true, 0), "@"))
+'	'	call tmparr_cap.setArray(split(GetCheckColList(true, 1), "@"))
+'
+'
+'		myKeyListStr = replace( GetCheckColList(true, 0),"@", "|")
+'		myCapListStr = replace( GetCheckColList(true, 1),"@", "|")
+'
+'	'	myCapListStr = tmparr_cap.sjoin("|")
+'	'	myKeyListStr = tmparr_key.sjoin("|")
+'
+'	'	istart = -1
+'	'	if tmparr_key.size() > 0 then
+'	'		for i = 0 to tmparr_key.size() - 1
+'	'			if lcase(tmparr_key.getit(i)) = "all" and (instr(lcase(tmparr_cap.getit(i)), "all") > 0 or instr(tmparr_cap.getit(i),"ï¿½ï¿½Ã¼") > 0) then
+'	'				'noop
+'	'				if tmparr_key.size() = 1 then
+'	'					exit for
+'	'				end if
+'	'			else
+'	'				istart = i
+'	'				exit for
+'	'			end if
+'	'		next
+'	'		if istart > -1 then
+'	'			myCapListStr = join(tmparr_cap.slice(istart, tmparr_cap.size()-1), "|")
+'	'			myKeyListStr = join(tmparr_key.slice(istart, tmparr_key.size()-1), "|")
+'	'		else
+'	'			myCapListStr = ""
+'	'			myKeyListStr = ""
+'	'		end if
+'	'	end if
+'		call Form.WriteConfigFileData(strFileName, strSection&"_cd", mynm, myKeyListStr)
+'		call Form.WriteConfigFileData(strFileName, strSection&"_nm", mynm, myCapListStr)
+'		call Form.WriteConfigFileData(strFileName, strSection&"_total", mynm, ubound(split(myCapListStr, "|"))+1)
+'		'set tmparr_key = Nothing
+'		'set tmparr_cap = Nothing
+'	end sub
+'
+'	sub saveKeyAndCap(myKeyListStr, myCapListStr)
+'		call Form.WriteConfigFileData(strFileName, strSection&"_cd", strKey, replace(myKeyListStr, "@","|"))
+'		call Form.WriteConfigFileData(strFileName, strSection&"_nm", strKey, replace(myCapListStr, "@","|"))
+'		call Form.WriteConfigFileData(strFileName, strSection&"_total", strKey, ubound(split(myCapListStr, "@"))+1)
+'	end sub
+'
+'	sub saveNm(mySection, myKey, myCapListStr, myKeyListStr)
+'		call Form.WriteConfigFileData(strFileName, mySection&"_cd", myKey, replace(myKeyListStr, "@","|"))
+'		call Form.WriteConfigFileData(strFileName, mySection&"_nm", myKey, replace(myCapListStr, "@","|"))
+'		call Form.WriteConfigFileData(strFileName, mySection&"_total", myKey, ubound(split(myCapListStr, "@"))+1)
+'	end sub
+'
+'	sub SetAllCheck(bCheck)
+'		call listCombo.SetAllCheck(bCheck)
+'	end sub
+'
+'	function GetTotalRow()
+'		GetTotalRow = listCombo.GetTotalRow()
+'	end function
+'
+'	function GetCellString(iRow, iCol)
+'		GetCellString = listCombo.GetCellString(iRow,iCol)
+'	end function
+'
+'	sub SetSelCheck(iIndex , bCheck)
+'		call listCombo.SetSelCheck(iIndex , bCheck )
+'	end sub
+'
+'	function GetSelCheck(iIndex)
+'		GetSelCheck = listCombo.GetSelCheck(iIndex)
+'	end function
+'end class
+''=====================================================
+'function ifnull(mysrc, mysub)
+'	if len(mysrc) = 0 then
+'		ifnull = mysub
+'	else
+'		ifnull = mysrc
+'	end if
+'end function
+''===================================================
+'sub openweb(myurl, mycorrdinate)
+'	if mycoordinate = "" then
+'		mycoordinate = array(30,200,1220,500) 'xpos, ypos, width, height
+'	end if
+'	Form.WriteConfigFileData "../programinfo.ini", "WEBLINK2", "MODIFY_URL", "/XPOS="&mycoordindate(0)&" /YPOS="&mycoordinate(1)&" /WIDTH="&mycoordinate(2)&" /HEIGHT="&mycoordinate(3)&" /URL="&myUrl
+'	Form.OpenScreen "9988"
+'end sub
+''===================================================
+'sub SetCheckColList(myCombo, iCol, keystr)
+'	myKeyList = split(keystr, "@")
+'	i = 0
+'	for each mykey in myKeyList
+'		if i = 0 then 
+'			if lcase(mykey) = "all" or instr(mykey, "ï¿½ï¿½Ã¼") > 0 then
+'				call ckAll(myCombo, 0, true)
+'				exit for
+'			end if
+'		end if
+'
+'		iRow = CInt(myCombo.GetIndexByColCaption(iCol, mykey))
+'		if iRow > -1 then
+'			call ckAll(myCombo, iRow, true)
+'		end if
+'		i = i + 1
+'	next
+'end sub
+'''===================================================
+'sub SetCheck2Opt(ck1, opt1, ck2, opt2, setstr)
+'	myarr = split(setstr, "@")
+'	'0 ck1, 1 opt1, 2 ck2, 3 opt2
+'	if myarr(0) = "0" then
+'		ck1.SetCheck "0"
+'		opt1.Enabled false
+'		ck2.SetCheck "0"
+'		opt2.Enabled false
+'	else
+'		ck1.SetCheck "1"
+'		opt1.Enabled true
+'		opt1.Caption myarr(1)
+'		ck2.Enabled true
+'		if myarr(2) = "0" then
+'			ck2.SetCheck "0"
+'			opt2.Enabled false
+'		else
+'			ck2.SetCheck "1"
+'			opt2.Enabled true
+'			opt2.Caption myarr(3)
+'		end if
+'	end if
+'end sub
+'''===================================================
+'function num2def(numStr, chStr, dec)
+'	reval = ""
+'	if numStr = "" or Instr(numStr, chStr) > 0 then
+'		reval = ""	
+'	else
+'		reval = formatNumber(numStr,dec)
+'	end if
+'	num2def = reval
+'end function
 
 

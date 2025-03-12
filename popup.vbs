@@ -1,9 +1,20 @@
+executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\import.vbs",1).readAll()
+import "ds"
+import "util"
+
+'============================================================================
+' 라이브러리 공통 import
+'============================================================================
+'		executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\import.vbs",1).readAll()
+'		import "popup"
+'============================================================================
+
+
+
 '============================================================================
 ' [Sub]	Notice_Auth
 '============================================================================
 '	사용법
-'	0. 스크립트 상단 아래 한줄을 include
-'		executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\notice.vbs",1).readAll()
 ' 	1. 이벤트 리스너에 함수 입력
 '		Sub TRANMANAGER_Receive(szTranID)
 '			Call Notice_Auth(szTranID, Memo1)
@@ -15,8 +26,8 @@ Sub Notice_Auth(szTranID, oMemo)
 	'해외채권권한(0420) End
 	If sAuth <> "R" Then
 		set tMemo = oMemo
-		set m_tColor = new MyIdxColor_Notice
-		tMemo.BackColor m_tColor.getIdxRGB(41)
+		set myCL = new MyIdxColor
+		tMemo.BackColor = myCL.getIdxRGB(41)
 		tMemo.Left = Form.GetScreenWidth / 4.5
 		tMemo.Top = Form.GetScreenHeight / 2.5
 		tMemo.Height=88
@@ -31,14 +42,16 @@ Sub Notice_Auth(szTranID, oMemo)
 	End If
 End Sub
 ''============================================================================
+
+
+
 '============================================================================
 ' [Class]	Notice_Common
 '============================================================================
 '	사용법
 '	컨트롤 생성 후 아래 이름맞게 변경 후 복붙하면 간편
 '	0. 스크립트 상단 (예시)
-'executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\notice.vbs",1).readAll()
-'set oNotice_Common = (new Notice_Common)(Memo_NC, Button_NC, Check_NC, "20220120")
+'	set oNotice_Common = (new Notice_Common)(Memo_NC, Button_NC, Check_NC, "20220120")
 '============================================================================
 ' 	1. 이벤트 리스너 (예시)
 'Sub Form_FormInit()
@@ -81,18 +94,17 @@ Class Notice_Common
 	End Function
 
 	public sub load(sText, nWidth, nHeight)
-		set colorIndex = new MyIdxColor_Notice
 		m_sScreenNm = Form.GetMainTr 
 		m_oButton_X.Caption = "X"
 		m_oMemo.Left = 1
 		m_oMemo.Top = 21
 		m_oMemo.Width = nWidth
 		m_oMemo.Height = nHeight
-		m_oMemo.BackColor = colorIndex.getIdxRGB(33)
+		m_oMemo.BackColor =  Form.GetKeyColor(33)
 		m_oMemo.Text = 	sText
 
 		
-		m_oCheck.BackColor = colorIndex.getIdxRGB(33)
+		m_oCheck.BackColor = Form.GetKeyColor(33)
 		m_oCheck.Caption "다시보지않기"
 		m_oCheck.UnCheckCaption "다시보지않기"
 		m_oCheck.Width = 100
@@ -105,16 +117,37 @@ Class Notice_Common
 		m_oButton_X.Top = m_oMemo.Top +2
 		m_oButton_X.Left = m_oMemo.Left + m_oMemo.Width-m_oButton_X.Width -2
 
+
 		memo_chk = Form.GetConfigFileData( "memo_visible.ini", "ChkDate",  m_sScreenNm, "" )
 		If memo_chk <> m_sSaveDate Then
-			m_oMemo.Visible True
-			m_oButton_X.Visible True
-			m_oCheck.Visible True
+			If m_oMemo.PeriodShow = TRUE then
+				nPeriodShowDate = Int(m_oMemo.GetPeriodShowDate())
+				nHostDate = Int(Form.GetHostDate())
+		
+				If nPeriodShowDate >= nHostDate then
+					m_oMemo.Visible True
+					m_oButton_X.Visible True
+					m_oCheck.Visible True
+				Else
+					m_oMemo.Visible False
+					m_oButton_X.Visible False
+					m_oCheck.Visible False
+				End If
+			Else
+				m_oMemo.Visible True
+				m_oButton_X.Visible True
+				m_oCheck.Visible True
+			End If
+
 		Else
 			m_oMemo.Visible False
 			m_oButton_X.Visible False
 			m_oCheck.Visible False
 		End If
+		
+
+		
+		
 
 	End Sub
 
@@ -139,8 +172,7 @@ End Class
 '	사용법
 '	컨트롤 생성 후 아래 이름맞게 변경 후 복붙하면 간편
 '	0. 스크립트 상단 (예시)
-'executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\notice.vbs",1).readAll()
-'set oNotice_NewService = (new Notice_NewService)(Memo_C, Button_C1, Button_C2, Button_C3, Button_C4, Button_C5, Button_C6, Button_C7, Check_C, "20210903")
+'	set oNotice_NewService = (new Notice_NewService)(Memo_C, Button_C1, Button_C2, Button_C3, Button_C4, Button_C5, Button_C6, Button_C7, Check_C, "20210903")
 '============================================================================
 ' 	1. 이벤트 리스너 (예시)
 'Sub Form_FormInit()
@@ -262,8 +294,7 @@ Class Notice_NewService
 		m_oButton_Link6.Width = 60
 		m_oButton_Link6.Height = 17
 
-		set colorIndex = new MyIdxColor_Notice
-		m_oCheck.BackColor = colorIndex.getIdxRGB(33)
+		m_oCheck.BackColor = Form.GetKeyColor(33)
 		m_oCheck.Caption "다시보지않기"
 		m_oCheck.UnCheckCaption "다시보지않기"
 		m_oCheck.Width = 100
@@ -351,8 +382,7 @@ End Class
 '	사용법
 '	컨트롤 생성 후 아래 이름맞게 변경 후 복붙하면 간편
 '	0. 스크립트 상단 (예시)
-'executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\notice.vbs",1).readAll()
-'set oNotice_NewService2 = (new Notice_NewService2)(Memo_C, Button_C1, Button_C2, Button_C3, Button_C4, Button_C5, Button_C6, Button_C7, Button_C8, Check_C, "20210903")
+'	set oNotice_NewService2 = (new Notice_NewService2)(Memo_C, Button_C1, Button_C2, Button_C3, Button_C4, Button_C5, Button_C6, Button_C7, Button_C8, Check_C, "20210903")
 '============================================================================
 ' 	1. 이벤트 리스너 (예시)
 'Sub Form_FormInit()
@@ -490,8 +520,7 @@ Class Notice_NewService2
 		m_oButton_Link7.Width = 60
 		m_oButton_Link7.Height = 17
 
-		set colorIndex = new MyIdxColor_Notice
-		m_oCheck.BackColor = colorIndex.getIdxRGB(33)
+		m_oCheck.BackColor =  Form.GetKeyColor(33)
 		m_oCheck.Caption "다시보지않기"
 		m_oCheck.UnCheckCaption "다시보지않기"
 		m_oCheck.Width = 100
@@ -577,112 +606,6 @@ Class Notice_NewService2
 	End Sub
 
 End Class
-
-'==================================================================
-' set the index color on infomax thema
-'==================================================================
-class MyIdxColor_Notice
-	Private m_mySkin
-	Private m_myColor
-	'Private m_mycolorini_path
-
-	Private Sub Class_Initialize()
-		'm_mycolorini_path = "..\..\common\config\colortbl.ini"
-      		m_mySkin = Form.GetConfigFileData("envset.ini", "SKININFO", "COLORTABLE", "0")
-      		set m_myColor = new MyDic_Notice
-		mycnt = Form.GetConfigFileData("colortbl.ini", "KEY", "COUNT", "0")
-      		for tidx = 0  to mycnt -1
-			tkey = Form.GetConfigFileData("colortbl.ini", "KEY", tidx, "0")
-      		        myRGBstr = Form.GetConfigFileData("colortbl.ini", "PAN_"&right("00"&m_mySkin, 2), tidx, "0")
-      		        myRGB = split(myRGBstr,"@")
-      		        call m_myColor.Add(CInt(tkey), RGB(myRGB(0), myRGB(1), myRGB(2)))
-      		next
-	End Sub
-
-	Private Sub Class_Terminate()
-		set m_myColor = Nothing
-	End Sub
-'	'if strSkin = "5" Or strSkin = "6" Or strSkin = "7" then	'블랙스킨
-
-	Public Function getIdxRGB(myIdx)
-		getIdxRGB = m_myColor.Item(myIdx)
-	End Function
-End class
-
-'=================================================================
-'dictionary class
-'=================================================================
-class MyDic_Notice
-	Private m_mydic
-
-	Private Sub Class_Initialize()
-		set m_mydic = CreateObject("Scripting.Dictionary")
-	End Sub
-
-	Private Sub Class_Terminate()
-		set m_mydic = Nothing
-	End Sub
-
-	Property Get Count
-		Count = m_mydic.Count
-	End Property
-
-	Public Sub Add(mykey, myitem)
-		call add2up(mykey, myitem)
-	End Sub
-
-	property Get keys
-		keys = m_mydic.keys
-	end property 
-
-	Public Function Item(mykey)
-		if m_mydic.Exists(mykey) then
-			Item = m_mydic.item(mykey)
-		else
-			Item = ""
-		end if
-	End Function
-
-	Sub del(mykey)
-	       if m_mydic.Exists(mykey) then
-			m_mydic.remove(mykey)
-		end if
-	end sub
-
-	Sub Remove(mykey)
-		m_mydic.remove(mykey)
-	End Sub
-
-	Sub RemoveAll()
-		m_mydic.removeAll
-	End Sub
-
-	sub clear()
-		call RemoveAll()	
-	end sub
-
-	Public Function Exists(mykey)
-		Exists = m_mydic.Exists(mykey)
-	End Function
-
-	public sub Modify(mykey, myitem)
-	       if m_mydic.Exists(mykey) then
-			call m_mydic.remove(mykey)
-			call m_mydic.Add(mykey, myitem)
-	       end if
-	end sub	
-
-	sub add2up(mykey, myitem)
-	    if m_mydic.Exists(mykey) then
-			call m_mydic.remove(mykey)
-		end if
-		call m_mydic.Add(mykey, myitem)
-	end sub
-
-	function size()
-		size = m_mydic.Count
-	end function
-end class
 '============================================================================================
 '=  고객조회 -> CRM
 Sub req9516(pscnum, pmyid) 

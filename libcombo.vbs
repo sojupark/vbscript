@@ -221,3 +221,205 @@ Class MyTermCombo
 	End Sub
 
 End Class
+
+
+
+
+'================================================================
+' 	MyMultiCheckCombo
+'================================================================
+'클래스 사용법
+'	0. 라이브러리 불러오기, 초기 세팅
+'		0-1. 아래 한줄을 include
+'			executeGlobal CreateObject("Scripting.FileSystemObject").openTextFile(Form.GetRuntimePath&"\libCombo.vbs",1).readAll()
+'		0-2. 파라미터에 형식에 맞게 대입
+'			ex) set myMCC = (new MyMultiCheckCombo)(Combo1, Edit1, 0)
+'																   0: ㅁㅁㅁ,ㅁㅁㅁ,ㅁㅁㅁ 타입
+'																   1: 000, 001, 010, ... 110, 111 타입
+' 	1. Form_FormInit()
+'		1-1	myInit(배열)
+'			ex) 
+'				Sub Form_FormInit()
+'					'용도에 따라 택1
+'					1-1-1 myMCC.MyInit(Array("@ESG 전체","1@지속가능채권","2@사회적채권","3@녹색채권"))
+' 					1-1-2 myMCC.MyInit_ini("ESG_INFO")
+'				End Sub
+'
+' 	2. 이벤트 리스너에 함수 Call 입력
+'		2-1
+'			ex)
+'				Sub Combo1_OnListCheckSelChanged(iIndex , bCheck)
+'					Call MyMCC.OnListCheckSelChanged(iIndex , bCheck)
+'				End Sub
+'	3. Edit의 내용 TR에 할당해 사용
+'		3-1 
+'			ex)
+'				If szTranID = "4410" then
+'					TRANMANAGER.SetItemData szTranID , "InBlock" , "ESG구분" , 0 , Edit1.Caption	
+'				End If
+'================================================================
+Class MyMultiCheckCombo
+	private m_Combo_Check
+	private m_Edit_Check
+	private m_CheckType
+
+	private Sub Class_Initialize()
+	End Sub
+
+	private Sub Class_Terminate()
+	End Sub
+
+'================================================================
+'	생성자
+'	처음에 필요한 오브젝트를 받아 멤버변수화
+'----------------------------------------------------------------
+' 파라미터
+' oCombo_Check	: 멀티체크콤보 객체
+' oEdit_Check	: Edit 객체 (상태저장, TR 메시지)
+' nCheckType	: 0: ㅁㅁㅁ,ㅁㅁㅁ,ㅁㅁㅁ 타입
+'				  1: 000, 101, 111 ... 타입
+'================================================================
+	public default Function Init(oCombo_Check, oEdit_Check, nCheckType)
+		set m_Combo_Check = oCombo_Check
+		set m_Edit_Check = oEdit_Check
+		m_CheckType = nCheckType
+		set Init = me
+	End Function
+
+'================================================================
+'	MyInit(arr_Rows)
+'	- Form.Init()에 사용
+'	- ex) oMCC.MyInit(Array('0@전체',1@국채, 2@회사채 ..))
+'----------------------------------------------------------------
+' 파라미터
+'	- arr_Rows 
+'	: 콤보내용 Array
+'	: ex) Array('0@전체',1@국채, 2@회사채 ..)
+'================================================================
+	public Sub MyInit(arr_Rows)
+		Call MyComboSetting(arr_Rows)
+	End Sub
+	
+'===============================================y==================
+'	MyInit_ini(sKey)
+'	- Form.Init()에 사용
+'	- ex) oMCC.MyInit_ini("ESG_INFO")
+'----------------------------------------------------------------
+' 파라미터
+'	- sKey: infomax/bin/ini/libcombo.ini Key값
+'================================================================
+	public Sub MyInit_ini(sKey)
+		const sPath =  "..\ini\libcombo.ini"
+		nCount = Form.GetConfigFileData( sPath , sKey , "Count" , 0 )
+		Dim arr_Rows()
+		ReDim arr_Rows(nCount-1)
+		For i=0 to nCount-1
+			arr_Rows(i) = Form.GetConfigFileData( sPath , sKey , i , "")
+		Next
+
+		Call MyComboSetting(arr_Rows)
+		
+	End Sub
+
+'================================================================
+'	MyComboSetting()
+'	- MyInit 함수에 사용
+'----------------------------------------------------------------
+'	- arr_Rows 
+'	: 콤보내용 Array
+'	: ex) Array('0@전체',1@국채, 2@회사채 ..)
+'================================================================
+	private Sub MyComboSetting(arr_Rows)
+		' 콤보 세팅
+		m_Combo_Check.ResetContent
+		For i=0 to uBound(arr_Rows)
+			m_Combo_Check.AddRow arr_Rows(i)
+		next	
+
+		' 상태저장
+		sEdit = m_Edit_Check.Caption
+
+		If sEdit <> "" Then
+			If m_CheckType = 0 Then
+				sEdit =  replace(sEdit,"'","")
+				arr_Edit= split(sEdit,",")
+				For i=0 to uBound(arr_Edit)
+					For j=0 to m_Combo_Check.GetTotalRow -1
+					If m_Combo_Check.GetCellString (j , 0 ) = arr_Edit(i) Then
+							m_Combo_Check.SetSelCheck j , True
+							Exit For
+						End If
+					Next
+				Next
+			ElseIf m_CheckType = 1 Then
+				For i=1 to len(sEdit)
+					If Mid(sEdit,i,1) = 1 Then
+						m_Combo_Check.SetSelCheck i , True
+					End If
+				Next
+			End If
+		Else
+			m_Combo_Check.SetAllCheck True
+
+		End If
+		Call OnListCheckSelChanged(-1 , True)
+	End Sub
+
+
+'================================================================
+'	OnListCheckSelChanged(iIndex , bCheck)
+'	- 체크콤보 체크시 Combo Caption, Edit 설정
+'	- ex) oMCC.OnListCheckSelChanged(iIndex , bCheck)
+'----------------------------------------------------------------
+'	iIndex	: OnListCheckSelChanged의 파라미터 할당
+'	bCheck	: OnListCheckSelChanged의 파라미터 할당 	
+'================================================================
+	public Sub OnListCheckSelChanged(iIndex , bCheck)
+		If iIndex = 0 Then
+			m_Combo_Check.Caption = m_Combo_Check.GetCellString (0 , 1)
+			m_Combo_Check.SetAllCheck bCheck
+		Else 	
+			m_Combo_Check.SetSelCheck 0 , False
+			sChkRow = m_Combo_Check.GetCheckColList(True , 0)
+			if sChkRow = "" Then
+				m_Combo_Check.SetSelCheck 0 , False
+				m_Combo_Check.Caption = m_Combo_Check.GetCellString (0 , 1)
+			Else
+				arr_ChkRow = split(sChkRow,"@")
+				If uBound(arr_ChkRow) = m_Combo_Check.GetTotalRow -2 Then
+					m_Combo_Check.SetSelCheck 0, True
+					m_Combo_Check.Caption = m_Combo_Check.GetCellString (0 , 1)
+				Else	
+					m_Combo_Check.Caption =  replace(m_Combo_Check.GetCheckColList (True , 1),"@",",")
+				End If
+			End If
+		End If
+		' 키 컬럼 내용 나열 (ㅁㅁㅁ, ㅁㅁㅁ, ㅁㅁㅁ, ...)
+		If m_CheckType = 0 Then
+			sEdit = replace(m_Combo_Check.GetCheckColList (True , 0),"@",",")
+			If left(sEdit,1) = "," Then
+				sEdit = right(sEdit,len(sEdit)-1)
+			End If
+			arr_remove = Array("'',", "''")
+			For i=0 to uBound(arr_remove)
+				sEdit= replace(sEdit, arr_remove(i),"")
+			Next
+			m_Edit_Check.Caption = sEdit
+
+		' 체크 위치마다 1 표시 (000, 001, 010, 011, ... ,111)
+		ElseIf m_CheckType = 1 Then
+			sEdit = ""
+			for i = 1 to m_Combo_Check.GetTotalRow-1
+				if m_Combo_Check.GetSelCheck(i) = True then
+					sEdit = sEdit & "1"
+				else
+					sEdit = sEdit & "0"
+				end if
+			next
+			m_Edit_Check.Caption = sEdit
+		End If
+	End Sub
+
+
+
+End Class
